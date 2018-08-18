@@ -13,8 +13,7 @@ for d in ./*/;
 		PKG_NAME_LEN=${#PKG_NAME}
 		PKG_NAME=$(for i in $PKG_NAME; do echo ${i:0:$PKG_NAME_LEN - 1}; done)
 		PKG_NAME_LEN=${#PKG_NAME}
-		pwd
-		printf "${RED}${d}${NC}\n"
+		printf "${RED}${PKG_NAME}${NC}\n"
 		PULL=$(git pull)
 		if [ "$PULL" == "Already up to date." ]; #|| [ "$PULL" == *"fatal" ];
 		then
