@@ -1,21 +1,9 @@
-LIGHTPURPLE='\033[0;35m'
-RED='\033[0;31m'
 LIGHTRED='\033[1;31m'
-GREEN='\033[0;32m'
 LIGHTGREEN='\033[1;32m'
-BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 LIGHTCYAN='\033[1;36m'
-LIGHTBLUE='\033[1;34m'
-ORANGE='\033[0;33m'
-DARKGRAY='\033[1;30m'
-CYAN='\033[0;36m'
 WHITE='\033[1;37m'
-
-BOLD=$(tput bold)
-NORMAL=$(tput sgr0)
 NC='\033[0m'
-SEPARATOR="====================================================================================="
 MINI_SEPARATOR="=================="
 LOGO="+=====================================================================================+
 |    _____   ____ _____________           ____ ___            .___       __           |
@@ -26,13 +14,14 @@ LOGO="+=========================================================================
 |         \/                 \/                    |__|        \/     \/          \/  |
 +=====================================================================================+"
 
-# printf "${LIGHTCYAN}${SEPARATOR}${NC}"
+# Print logo, initialization text
 printf "${LIGHTCYAN}${LOGO}${NC}\n\n"
 printf "${WHITE}By: wbdana\n"
 printf "    https://github.com/wbdana/aur-update\n\n"
 printf "Starting updates...\n${NC}"
 
 for d in ./*/; do
+	# cd into AUR package directory
 	cd "$d"
 	# Get current directory string length
 	DIR_NAME_LEN=${#d}
@@ -45,17 +34,20 @@ for d in ./*/; do
 	# Reset PKG_NAME_LEN to length of package name string
 	PKG_NAME_LEN=${#PKG_NAME}
 
+	# Make a separator of length equal to
+	# "//=> ${PKG_NAME} <=//"
 	SEPARATOR_SIZE=`expr $PKG_NAME_LEN + 10`
 	MED_SEPARATOR=""
 	for i in $(seq 1 $SEPARATOR_SIZE); do
 		MED_SEPARATOR+="="
 	done
 
-	printf "${LIGHTCYAN}${SEPARATOR}${NC}\n\n"
+	# Print formatted directory info
 	printf "${LIGHTCYAN}${MED_SEPARATOR}${NC}\n"		
 	printf "${WHITE}//=>${NC} ${LIGHTRED}${PKG_NAME}${NC} ${WHITE}<=//${NC}\n"
 	printf "${LIGHTCYAN}${MED_SEPARATOR}${NC}\n"
 	printf "${YELLOW}Pulling from git repository...${NC}\n"
+
 	# Store results of git pull for formatted output
 	PULL=$(git pull)
 	if [ "$PULL" == "Already up to date." ]; then
@@ -113,16 +105,16 @@ for d in ./*/; do
 
 	# Offer to rebuild or update package
 	# 'Y' or 'y' will accept, any other keypress will reject
-	read -p "$(printf "${LIGHTGREEN}//=> ${NC}${WHITE}Would you like to${NC} ${LIGHTCYAN}${OPTION}${NC} ${LIGHTRED}${PKG_NAME}${NC}${WHITE}?${NC} [Y/n]")" -r
+	read -p "$(printf "${LIGHTGREEN}//=> ${NC}${WHITE}Would you like to${NC} ${LIGHTCYAN}${OPTION}${NC} ${LIGHTRED}${PKG_NAME}${NC}${WHITE}?${NC} [Y/n] ")" -r
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
 		echo
 		printf "${LIGHTGREEN}${OPT_GERUND} ${PKG_NAME}!${NC}\n"
 		makepkg -sirc
 	else
 		# Convert OPT_GERUND to lower case
+		echo
 		OPT_GERUND=$(echo $OPT_GERUND | tr '[:upper:]' '[:lower:]')
-		printf "${LIGHTRED}Not ${OPT_GERUND} ${PKG_NAME}!${NC}\n"
-		echo && echo
+		printf "${LIGHTRED}NOT ${OPT_GERUND} ${PKG_NAME}!${NC}\n\n"
 	fi
 
 	# Go back to top level directory for next iteration
