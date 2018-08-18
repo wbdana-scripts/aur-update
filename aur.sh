@@ -13,8 +13,21 @@ CYAN='\033[0;36m'
 BOLD=$(tput bold)
 NORMAL=$(tput sgr0)
 NC='\033[0m'
+SEPARATOR="==================================================================================="
+LOGO="
+   _____   ____ _____________           ____ ___            .___       __          
+  /  _  \ |    |   \______   \         |    |   \______   __| _/____ _/  |_  ____  
+ /  /_\  \|    |   /|       _/  ______ |    |   /\____ \ / __ |\__  \\   __\/ __ \ 
+/    |    \    |  / |    |   \ /_____/ |    |  / |  |_> > /_/ | / __ \|  | \  ___/ 
+\____|__  /______/  |____|_  /         |______/  |   __/\____ |(____  /__|  \___  >
+        \/                 \/                    |__|        \/     \/          \/ 
+"
 
-printf "${LIGHT}"
+printf "${LIGHTCYAN}${SEPARATOR}${NC}"
+printf "${LIGHTCYAN}${LOGO}${NC}\n\n"
+printf "By wbdana\n"
+printf "https://github.com/wbdana/aur-update\n\n"
+printf "Starting updates...\n"
 
 for d in ./*/;
 	do
@@ -30,8 +43,9 @@ for d in ./*/;
 		# Reset PKG_NAME_LEN to length of package name string
 		PKG_NAME_LEN=${#PKG_NAME}
 
-		printf "${LIGHTCYAN}${PKG_NAME}${NC}\n\n"
-		printf "${CYAN}Pulling from git repository...${NC}\n"
+		printf "${LIGHTCYAN}${SEPARATOR}${NC}\n"
+		printf "${RED}${PKG_NAME}${NC}\n\n"
+		printf "${YELLOW}Pulling from git repository...${NC}\n"
 		# Store results of git pull for formatted output
 		PULL=$(git pull)
 		if [ "$PULL" == "Already up to date." ]; then
@@ -65,15 +79,15 @@ for d in ./*/;
 		# If currently-installed version is the same as the new version,
 		# offer to rebuild; otherwise, offer to update
 		# Set verb variables accordingly
-		printf "New Version Number:     ${GREEN}${NEW_VERSION}${NC}\n"
+		printf "${LIGHTCYAN}New Version Number:${NC}     ${GREEN}${NEW_VERSION}${NC}\n"
 		if [[ "$CURRENT_VERSION" =~ "$NEW_VERSION" ]]; then
 			OPTION="rebuild"
 			OPT_GERUND="Rebuilding"
-			printf "Current Version Number:${GREEN}${CURRENT_VERSION}${NC}\n"
+			printf "${LIGHTCYAN}Current Version Number:${NC}${GREEN}${CURRENT_VERSION}${NC}\n"
 		else
 			OPTION="Update"
 			OPT_GERUND="Updating"
-			printf "Current Version Number:${YELLOW}${CURRENT_VERSION}${NC}\n"
+			printf "${LIGHTCYAN}Current Version Number:${NC}${YELLOW}${CURRENT_VERSION}${NC}\n"
 		fi
 		echo # New line
 
