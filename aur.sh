@@ -1,6 +1,7 @@
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
 NC='\033[0m'
 
 for d in ./*/;
@@ -13,31 +14,45 @@ for d in ./*/;
 		PKG_NAME=$(for i in $PKG_NAME; do echo ${i:0:$PKG_NAME_LEN - 1}; done)
 		PKG_NAME_LEN=${#PKG_NAME}
 		pwd
-		printf "${RED}${d}${NC}"
+		printf "${RED}${d}${NC}\n"
 		PULL=$(git pull)
-		echo
-		printf "${GREEN}${PULL}${NC}"
-#		if [ "$PULL" == "Already up to date." ] || [ "$PULL" == *"fatal" ];
-#		then
-#			cd .. && printf "\n\n"  && continue;
-#		fi
+		if [ "$PULL" == "Already up to date." ]; #|| [ "$PULL" == *"fatal" ];
+		then
+			printf "${GREEN}${PULL}${NC}"
+		else
+			cd .. && printf "\n\n"  && continue;
+		fi
 
 		echo
-		NEW_VERSION=$(cat PKGBUILD | grep pkgver=)
+		NEW_VERSION=$(cat PKGBUILD | grep -m 1 "pkgver=")
 		NEW_VERSION_LEN=${#NEW_VERSION}
 		NEW_VERSION=$(for i in $NEW_VERSION; do echo ${i:7:$NEW_VERSION_LEN}; done)
-		printf "New Version Number: ${RED}${NEW_VERSION}${NC}\n"
-#		echo
+		NEW_VERSION_LEN=${#NEW_VERSION}
+		# printf "New Version Number:     ${RED}${NEW_VERSION}${NC}\n"
 
-		CURRENT_VERSION=$(pacman -Qe | grep $PKG_NAME)
-		echo $CURRENT_VERSION
-		CURRENT_VERSION_LEN=${#CURRENT_VERSION}
-		echo $CURRENT_VERSION_LEN
-		CURRENT_VERSION=$(for i in $CURRENT_VERSION; do echo ${i:$PKG_NAME_LEN:$CURRENT_VERSION_LEN}; done)
-		echo $CURRENT_VERSION
-		printf "Current Version Number: ${BLUE}${CURRENT_VERSION}${NC}"
-		echo
+		PACMAN_OUTPUT=$(pacman -Qe | grep $PKG_NAME)
+		CURRENT_VERSION=${PACMAN_OUTPUT:PKG_NAME_LEN}
+		CURRENT_VERSION_LEN=`echo -n $CURRENT_VERSION | wc -m`
+		if [[ $CURRENT_VERSION =~ .*-.* && "$CURRENT_VERSION_LEN" -ne "$NEW_VERSION_LEN" ]]; then
+			DIFF=`expr $NEW_VERSION_LEN - $CURRENT_VERSION_LEN`
+			CURRENT_VERSION=${CURRENT_VERSION:0:DIFF}
+			CURRENT_VERSION_LEN=`echo -n $CURRENT_VERSION | wc -m`
+		fi
 
+		# Why are these not equal...?
+		if [[ $CURRENT_VERSION == $NEW_VERSION ]]; then
+			echo TRUE
+			echo $CURRENT_VERSION_LEN
+			echo $NEW_VERSION_LEN
+			printf "New Version Number:     ${GREEN}${NEW_VERSION}${NC}\n"
+			printf "Current Version Number:${GREEN}${CURRENT_VERSION}${NC}\n"
+		else
+			echo FALSE
+			echo $CURRENT_VERSION_LEN
+			echo $NEW_VERSION_LEN
+			printf "New Version Number:     ${RED}${NEW_VERSION}${NC}\n"
+			printf "Current Version Number:${YELLOW}${CURRENT_VERSION}${NC}\n"
+		fi
 
 
 		echo
