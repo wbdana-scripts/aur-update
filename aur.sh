@@ -1,5 +1,6 @@
 LIGHTPURPLE='\033[0;35m'
 RED='\033[0;31m'
+LIGHTRED='\033[1;31m'
 GREEN='\033[0;32m'
 LIGHTGREEN='\033[1;32m'
 BLUE='\033[0;34m'
@@ -9,28 +10,29 @@ LIGHTBLUE='\033[1;34m'
 ORANGE='\033[0;33m'
 DARKGRAY='\033[1;30m'
 CYAN='\033[0;36m'
+WHITE='\033[1;37m'
 
 BOLD=$(tput bold)
 NORMAL=$(tput sgr0)
 NC='\033[0m'
-SEPARATOR="==================================================================================="
-LOGO="
-   _____   ____ _____________           ____ ___            .___       __          
-  /  _  \ |    |   \______   \         |    |   \______   __| _/____ _/  |_  ____  
- /  /_\  \|    |   /|       _/  ______ |    |   /\____ \ / __ |\__  \\   __\/ __ \ 
-/    |    \    |  / |    |   \ /_____/ |    |  / |  |_> > /_/ | / __ \|  | \  ___/ 
-\____|__  /______/  |____|_  /         |______/  |   __/\____ |(____  /__|  \___  >
-        \/                 \/                    |__|        \/     \/          \/ 
-"
+SEPARATOR="====================================================================================="
+MINI_SEPARATOR="=================="
+LOGO="+=====================================================================================+
+|    _____   ____ _____________           ____ ___            .___       __           |
+|   /  _  \ |    |   \______   \         |    |   \______   __| _/____ _/  |_  ____   |
+|  /  /_\  \|    |   /|       _/  ______ |    |   /\____ \ / __ |\__  \\   __ \/ __ \  |
+| /    |    \    |  / |    |   \ /_____/ |    |  / |  |_> > /_/ | / __ \|  | \  ___/  |
+| \____|__  /______/  |____|_  /         |______/  |   __/\____ |(____  /__|  \___  > |
+|         \/                 \/                    |__|        \/     \/          \/  |
++=====================================================================================+"
 
-printf "${LIGHTCYAN}${SEPARATOR}${NC}"
+# printf "${LIGHTCYAN}${SEPARATOR}${NC}"
 printf "${LIGHTCYAN}${LOGO}${NC}\n\n"
-printf "By wbdana\n"
-printf "https://github.com/wbdana/aur-update\n\n"
-printf "Starting updates...\n"
+printf "${WHITE}By: wbdana\n"
+printf "    https://github.com/wbdana/aur-update\n\n"
+printf "Starting updates...\n${NC}"
 
-for d in ./*/;
-	do
+for d in ./*/; do
 	cd "$d"
 		# Get current directory string length
 		DIR_NAME_LEN=${#d}
@@ -43,15 +45,23 @@ for d in ./*/;
 		# Reset PKG_NAME_LEN to length of package name string
 		PKG_NAME_LEN=${#PKG_NAME}
 
-		printf "${LIGHTCYAN}${SEPARATOR}${NC}\n"
-		printf "${RED}${PKG_NAME}${NC}\n\n"
+		SEPARATOR_SIZE=`expr $PKG_NAME_LEN + 10`
+		MED_SEPARATOR=""
+		for i in $(seq 1 $SEPARATOR_SIZE); do
+			MED_SEPARATOR+="="
+		done
+
+		printf "${LIGHTCYAN}${SEPARATOR}${NC}\n\n"
+		printf "${LIGHTCYAN}${MED_SEPARATOR}${NC}\n"		
+		printf "${WHITE}//=>${NC} ${LIGHTRED}${PKG_NAME}${NC} ${WHITE}<=//${NC}\n"
+		printf "${LIGHTCYAN}${MED_SEPARATOR}${NC}\n"
 		printf "${YELLOW}Pulling from git repository...${NC}\n"
 		# Store results of git pull for formatted output
 		PULL=$(git pull)
 		if [ "$PULL" == "Already up to date." ]; then
-			printf "${GREEN}${PULL}${NC}"
+			printf "${LIGHTGREEN}${PULL}${NC}"
 		elif [ "$PULL" == *"fatal" ]; then
-			printf "${RED}${PULL}${NC}"
+			printf "${LIGHTRED}${PULL}${NC}"
 		else
 			printf "${LIGHTCYAN}${PULL}${NC}"
 		fi
@@ -79,40 +89,39 @@ for d in ./*/;
 		# If currently-installed version is the same as the new version,
 		# offer to rebuild; otherwise, offer to update
 		# Set verb variables accordingly
-		printf "${LIGHTCYAN}New Version Number:${NC}     ${GREEN}${NEW_VERSION}${NC}\n"
+		printf "${LIGHTCYAN}New Version Number:${NC}     ${LIGHTGREEN}${NEW_VERSION}${NC}\n"
 		if [[ "$CURRENT_VERSION" =~ "$NEW_VERSION" ]]; then
-			OPTION="rebuild"
+			OPTION="REBUILD"
 			OPT_GERUND="Rebuilding"
-			printf "${LIGHTCYAN}Current Version Number:${NC}${GREEN}${CURRENT_VERSION}${NC}\n"
+			printf "${LIGHTCYAN}Current Version Number:${NC}${LIGHTGREEN}${CURRENT_VERSION}${NC}\n"
 		else
-			OPTION="Update"
+			OPTION="UPDATE"
 			OPT_GERUND="Updating"
-			printf "${LIGHTCYAN}Current Version Number:${NC}${YELLOW}${CURRENT_VERSION}${NC}\n"
+			printf "${LIGHTCYAN}Current Version Number:${NC} ${YELLOW}${CURRENT_VERSION}${NC}\n"
 		fi
 		echo # New line
 
+
 		# Grab contents of PKGBUILD
 		# and print for review
+		printf "${LIGHTCYAN}${MINI_SEPARATOR}${NC}\n"
+		printf "${WHITE}//=> ${NC}${LIGHTCYAN}PKGBUILD${NC}${WHITE} <=//${NC}\n"
+		printf "${LIGHTCYAN}${MINI_SEPARATOR}${NC}\n"
 		PKG=$(cat PKGBUILD)
-		printf "${NC}${PKG}${NC}"
+		printf "${WHITE}${PKG}${NC}"
 		echo && echo # New lines
 
 		# Offer to rebuild or update package
 		# 'Y' or 'y' will accept, any other keypress will reject
-	
-		# '\033[1;33m'
-		# '\e[31mFoobar\e[0m:
-		# read -p "$(echo -e $BOLD$YELLOW"foo bar "$RESET)" INPUT_VARIABLE
-		read -p "$(printf "${LIGHTGREEN}Would you like to${NC} ${RED}${OPTION}${NC} ${LIGHTCYAN}${PKG_NAME}${NC}${LIGHTGREEN}?${NC} ")" -r
-		# read -p "Would you like to ${OPTION} ${PKG_NAME}? " -n 1 -r
+		read -p "$(printf "${LIGHTGREEN}//=> ${NC}${WHITE}Would you like to${NC} ${LIGHTCYAN}${OPTION}${NC} ${LIGHTRED}${PKG_NAME}${NC}${WHITE}?${NC} [Y/n]")" -r
 		if [[ $REPLY =~ ^[Yy]$ ]]; then
 			echo
-			printf "${GREEN}${OPT_GERUND} ${PKG_NAME}!${NC}"
+			printf "${LIGHTGREEN}${OPT_GERUND} ${PKG_NAME}!${NC}\n"
 			makepkg -sirc
 		else
 			# Convert OPT_GERUND to lower case
 			OPT_GERUND=$(echo $OPT_GERUND | tr '[:upper:]' '[:lower:]')
-			printf "${RED}Not ${OPT_GERUND} ${PKG_NAME}!${NC}"
+			printf "${LIGHTRED}Not ${OPT_GERUND} ${PKG_NAME}!${NC}\n"
 			echo && echo
 		fi
 
