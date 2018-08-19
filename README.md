@@ -1,6 +1,6 @@
 # AUR-Update
 
-![AUR-Update Demo](https://i.imgur.com/F5kACyY.gif)
+![AUR-Update Demo](https://i.imgur.com/pDaYecW.gif)
 
 ## About
 
