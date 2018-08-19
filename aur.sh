@@ -5,6 +5,7 @@ LIGHTCYAN='\033[1;36m'
 WHITE='\033[1;37m'
 NC='\033[0m'
 MINI_SEPARATOR="=================="
+END_SEPARATOR="============================="
 LOGO="+=====================================================================================+
 |    _____   ____ _____________           ____ ___            .___       __           |
 |   /  _  \ |    |   \______   \         |    |   \______   __| _/____ _/  |_  ____   |
@@ -79,12 +80,12 @@ for d in ./*/; do
 	fi
 
 	# If currently-installed version is the same as the new version,
-	# offer to rebuild; otherwise, offer to update
+	# offer to reinstall; otherwise, offer to update
 	# Set verb variables accordingly
 	printf "${LIGHTCYAN}New Version Number:${NC}     ${LIGHTGREEN}${NEW_VERSION}${NC}\n"
 	if [[ "$CURRENT_VERSION" =~ "$NEW_VERSION" ]]; then
-		OPTION="REBUILD"
-		OPT_GERUND="Rebuilding"
+		OPTION="REINSTALL"
+		OPT_GERUND="Reinstalling"
 		printf "${LIGHTCYAN}Current Version Number:${NC}${LIGHTGREEN}${CURRENT_VERSION}${NC}\n"
 	else
 		OPTION="UPDATE"
@@ -103,16 +104,14 @@ for d in ./*/; do
 	printf "${WHITE}${PKG}${NC}"
 	echo && echo # New lines
 
-	# Offer to rebuild or update package
+	# Offer to reinstall or update package
 	# 'Y' or 'y' will accept, any other keypress will reject
 	read -p "$(printf "${LIGHTGREEN}//=> ${NC}${WHITE}Would you like to${NC} ${LIGHTCYAN}${OPTION}${NC} ${LIGHTRED}${PKG_NAME}${NC}${WHITE}?${NC} [Y/n] ")" -r
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
-		echo
 		printf "${LIGHTGREEN}${OPT_GERUND} ${PKG_NAME}!${NC}\n"
 		makepkg -sirc
 	else
 		# Convert OPT_GERUND to lower case
-		echo
 		OPT_GERUND=$(echo $OPT_GERUND | tr '[:upper:]' '[:lower:]')
 		printf "${LIGHTRED}NOT ${OPT_GERUND} ${PKG_NAME}!${NC}\n\n"
 	fi
@@ -120,3 +119,7 @@ for d in ./*/; do
 	# Go back to top level directory for next iteration
 	cd ..;
 done
+
+printf "${LIGHTCYAN}${END_SEPARATOR}${NC}\n"
+printf "${WHITE}//=> ${LIGHTGREEN}AUR Update complete!${NC}${WHITE}<=//${NC}\n"
+printf "${LIGHTCYAN}${END_SEPARATOR}${NC}\n"
