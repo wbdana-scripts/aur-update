@@ -106,7 +106,11 @@ for d in ./*/; do
 
 	# Offer to reinstall or update package
 	# 'Y' or 'y' will accept, any other keypress will reject
-	read -p "$(printf "${LIGHTGREEN}//=> ${NC}${WHITE}Would you like to${NC} ${LIGHTCYAN}${OPTION}${NC} ${LIGHTRED}${PKG_NAME}${NC}${WHITE}?${NC} [Y/n] ")" -r
+	if [[ $OPTION == "UPDATE" ]]; then
+		read -p "$(printf "${LIGHTGREEN}//=> ${NC}${WHITE}Would you like to${NC} ${LIGHTGREEN}${OPTION}${NC} ${LIGHTRED}${PKG_NAME}${NC}${WHITE}?${NC} [Y/n] ")" -r
+	else
+		read -p "$(printf "${LIGHTGREEN}//=> ${NC}${WHITE}Would you like to${NC} ${LIGHTCYAN}${OPTION}${NC} ${LIGHTRED}${PKG_NAME}${NC}${WHITE}?${NC} [Y/n] ")" -r
+	fi
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
 		printf "${LIGHTGREEN}${OPT_GERUND} ${PKG_NAME}!${NC}\n"
 		makepkg -sirc
