@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 LIGHTRED='\033[1;31m'
 LIGHTGREEN='\033[1;32m'
 YELLOW='\033[1;33m'
@@ -83,11 +84,17 @@ for d in ./*/; do
 	# Strip package name from version info
 	CURRENT_VERSION=${PACMAN_OUTPUT:PKG_NAME_LEN}
 	CURRENT_VERSION_LEN=`echo -n $CURRENT_VERSION | wc -m`
+
 	# Remove trailing "-1", etc. from currently installed version info
 	if [[ $CURRENT_VERSION =~ .*-.* && "$CURRENT_VERSION_LEN" -ne "$NEW_VERSION_LEN" ]]; then
 		DIFF=`expr $NEW_VERSION_LEN - $CURRENT_VERSION_LEN`
 		CURRENT_VERSION=${CURRENT_VERSION:0:DIFF}
 		CURRENT_VERSION_LEN=`echo -n $CURRENT_VERSION | wc -m`
+	fi
+
+	if [[ $CURRENT_VERSION =~ .*:.* || "$CURRENT_VERSION_LEN" -ne "$NEW_VERSION_LEN" ]]; then
+		printf "${LIGHTGREEN}Current: ${CURRENT_VERSION}${NC}\n"
+		printf "${LIGHTGREEN}New:        ${NEW_VERSION}${NC}\n\n\n"
 	fi
 
 	# If currently-installed version is the same as the new version,
