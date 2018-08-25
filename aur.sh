@@ -91,7 +91,7 @@ for d in ./*/; do
 		CURRENT_VERSION=${CURRENT_VERSION:0:DIFF}
 		CURRENT_VERSION_LEN=`echo -n $CURRENT_VERSION | wc -m`
 	fi
-
+	echo && echo
 	if [[ $CURRENT_VERSION =~ .*:.* || "$CURRENT_VERSION_LEN" -ne "$NEW_VERSION_LEN" ]]; then
 		printf "${LIGHTGREEN}Current: ${CURRENT_VERSION}${NC}\n"
 		printf "${LIGHTGREEN}New:        ${NEW_VERSION}${NC}\n\n\n"
