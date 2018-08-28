@@ -22,12 +22,8 @@ printf "${WHITE}By: wbdana\n"
 printf "    https://github.com/wbdana/aur-update\n\n"
 printf "Starting updates...\n${NC}"
 
-# Make package list and old package list files if they do not exist
-# Convert package list to old package list
-# Remake package list
-touch aur-pkglist aur-pkglist.old
-mv ./aur-pkglist ./aur-pkglist.old
-touch aur-pkglist
+# Declare a variable to hold the package list
+PKG_LIST=""
 
 for d in ./*/; do
 	# Get current directory string length
@@ -42,7 +38,8 @@ for d in ./*/; do
 	PKG_NAME_LEN=${#PKG_NAME}
 
 	# Add PKG_NAME to package list
-	echo $PKG_NAME >> aur-pkglist
+	# echo $PKG_NAME >> aur-pkglist
+	PKG_LIST=$(echo $PKG_LIST && echo && echo && echo $PKG_NAME)
 
 	# cd into AUR package directory
 	cd "$d"
@@ -136,6 +133,16 @@ for d in ./*/; do
 	# Go back to top level directory for next iteration
 	cd ..;
 done
+
+# Make package list and old package list files if they do not exist
+# Convert package list to old package list
+# Remake package list
+touch aur-pkglist aur-pkglist.old
+mv ./aur-pkglist ./aur-pkglist.old
+touch aur-pkglist
+
+# Add package list to new package list file
+echo $PKG_LIST >> aur-pkglist
 
 printf "${LIGHTCYAN}${END_SEPARATOR}${NC}\n"
 printf "${WHITE}//=> ${LIGHTGREEN}AUR Update complete!${NC}${WHITE}<=//${NC}\n"
