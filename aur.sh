@@ -77,7 +77,7 @@ for d in ./*/; do
 	NEW_VERSION_LEN=${#NEW_VERSION}
 
 	# Get currently installed package version from pacman
-	PACMAN_OUTPUT=$(pacman -Qe | grep $PKG_NAME)
+	PACMAN_OUTPUT=$(pacman -Qm | grep $PKG_NAME)
 	# Strip package name from version info
 	CURRENT_VERSION=${PACMAN_OUTPUT:PKG_NAME_LEN}
 	CURRENT_VERSION_LEN=`echo -n $CURRENT_VERSION | wc -m`
