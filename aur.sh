@@ -23,30 +23,30 @@ printf "    https://github.com/wbdana/aur-update\n\n"
 printf "Starting updates...\n${NC}"
 
 # Declare a variable to hold the package list
-PKG_LIST=""
+pkg_list=""
 
 for d in ./*/; do
 	# Get current directory string length
-	DIR_NAME_LEN=${#d}
+	dir_name_len=${#d}
 	# Remove './' from start of current directory
-	PKG_NAME=$(for i in $d; do echo ${i:2:$DIR_NAME_LEN}; done)
+	pkg_name=$(for i in $d; do echo ${i:2:$dir_name_len}; done)
 	# Get length of package name plus trailing '/'
-	PKG_NAME_LEN=${#PKG_NAME}
+	pkg_name_len=${#pkg_name}
 	# Remove trailing '/'
-	PKG_NAME=$(for i in $PKG_NAME; do echo ${i:0:$PKG_NAME_LEN - 1}; done)
-	# Reset PKG_NAME_LEN to length of package name string
-	PKG_NAME_LEN=${#PKG_NAME}
+	pkg_name=$(for i in $pkg_name; do echo ${i:0:$pkg_name_len - 1}; done)
+	# Reset pkg_name_len to length of package name string
+	pkg_name_len=${#pkg_name}
 
-	# Add PKG_NAME to package list
-	# echo $PKG_NAME >> aur-pkglist
-	PKG_LIST=$(echo $PKG_LIST && echo && echo && echo $PKG_NAME)
+	# Add pkg_name to package list
+	# echo $pkg_name >> aur-pkglist
+	pkg_list=$(echo $pkg_list && echo && echo && echo $pkg_name)
 
 	# cd into AUR package directory
 	cd "$d"
 
 	# Make a separator of length equal to
-	# "//=> ${PKG_NAME} <=//"
-	SEPARATOR_SIZE=`expr $PKG_NAME_LEN + 10`
+	# "//=> ${pkg_name} <=//"
+	SEPARATOR_SIZE=`expr $pkg_name_len + 10`
 	MED_SEPARATOR=""
 	for i in $(seq 1 $SEPARATOR_SIZE); do
 		MED_SEPARATOR+="="
@@ -54,53 +54,53 @@ for d in ./*/; do
 
 	# Print formatted directory info
 	printf "${LIGHTCYAN}${MED_SEPARATOR}${NC}\n"		
-	printf "${WHITE}//=>${NC} ${LIGHTRED}${PKG_NAME}${NC} ${WHITE}<=//${NC}\n"
+	printf "${WHITE}//=>${NC} ${LIGHTRED}${pkg_name}${NC} ${WHITE}<=//${NC}\n"
 	printf "${LIGHTCYAN}${MED_SEPARATOR}${NC}\n"
-	printf "${YELLOW}Pulling from git repository...${NC}\n"
+	printf "${YELLOW}pulling from git repository...${NC}\n"
 
 	# Store results of git pull for formatted output
-	PULL=$(git pull)
-	if [ "$PULL" == "Already up to date." ]; then
-		printf "${LIGHTGREEN}${PULL}${NC}"
-	elif [ "$PULL" == *"fatal" ]; then
-		printf "${LIGHTRED}${PULL}${NC}"
+	pull=$(git pull)
+	if [ "$pull" == "Already up to date." ]; then
+		printf "${LIGHTGREEN}${pull}${NC}"
+	elif [ "$pull" == *"fatal" ]; then
+		printf "${LIGHTRED}${pull}${NC}"
 	else
-		printf "${LIGHTCYAN}${PULL}${NC}"
+		printf "${LIGHTCYAN}${pull}${NC}"
 	fi
 	echo && echo # New lines
 
 	# Get pkgver from PKGBUILD, excluding all but the first match
-	NEW_VERSION=$(cat PKGBUILD | grep -m 1 "pkgver=")
+	new_version=$(cat PKGBUILD | grep -m 1 "pkgver=")
 	# Strip "pkgver=" from version info
-	NEW_VERSION_LEN=${#NEW_VERSION}
-	NEW_VERSION=$(for i in $NEW_VERSION; do echo ${i:7:$NEW_VERSION_LEN}; done)
-	NEW_VERSION_LEN=${#NEW_VERSION}
+	new_version_len=${#new_version}
+	new_version=$(for i in $new_version; do echo ${i:7:$new_version_len}; done)
+	new_version_len=${#new_version}
 
 	# Get currently installed package version from pacman
-	PACMAN_OUTPUT=$(pacman -Qm | grep $PKG_NAME)
+	pacman_output=$(pacman -Qm | grep $pkg_name)
 	# Strip package name from version info
-	CURRENT_VERSION=${PACMAN_OUTPUT:PKG_NAME_LEN}
-	CURRENT_VERSION_LEN=`echo -n $CURRENT_VERSION | wc -m`
+	current_version=${pacman_output:pkg_name_len}
+	current_version_len=`echo -n $current_version | wc -m`
 
 	# Remove trailing "-1", etc. from currently installed version info
-	if [[ $CURRENT_VERSION =~ .*-.* && "$CURRENT_VERSION_LEN" -ne "$NEW_VERSION_LEN" ]]; then
-		DIFF=`expr $NEW_VERSION_LEN - $CURRENT_VERSION_LEN`
-		CURRENT_VERSION=${CURRENT_VERSION:0:DIFF}
-		CURRENT_VERSION_LEN=`echo -n $CURRENT_VERSION | wc -m`
+	if [[ $current_version =~ .*-.* && "$current_version_len" -ne "$new_version_len" ]]; then
+		diff=`expr $new_version_len - $current_version_len`
+		current_version=${current_version:0:diff}
+		current_version_len=`echo -n $current_version | wc -m`
 	fi
 
 	# If currently-installed version is the same as the new version,
 	# offer to reinstall; otherwise, offer to update
 	# Set verb variables accordingly
-	printf "${LIGHTCYAN}New Version Number:${NC}     ${LIGHTGREEN}${NEW_VERSION}${NC}\n"
-	if [[ "$CURRENT_VERSION" =~ "$NEW_VERSION" ]]; then
-		OPTION="REINSTALL"
-		OPT_GERUND="Reinstalling"
-		printf "${LIGHTCYAN}Current Version Number:${NC}${LIGHTGREEN}${CURRENT_VERSION}${NC}\n"
+	printf "${LIGHTCYAN}New Version Number:${NC}     ${LIGHTGREEN}${new_version}${NC}\n"
+	if [[ "$current_version" =~ "$new_version" ]]; then
+		option="REINSTALL"
+		opt_gerund="Reinstalling"
+		printf "${LIGHTCYAN}Current Version Number:${NC}${LIGHTGREEN}${current_version}${NC}\n"
 	else
-		OPTION="UPDATE"
-		OPT_GERUND="Updating"
-		printf "${LIGHTCYAN}Current Version Number:${NC} ${YELLOW}${CURRENT_VERSION}${NC}\n"
+		option="UPDATE"
+		opt_gerund="Updating"
+		printf "${LIGHTCYAN}Current Version Number:${NC} ${YELLOW}${current_version}${NC}\n"
 	fi
 	echo # New line
 
@@ -116,18 +116,18 @@ for d in ./*/; do
 
 	# Offer to reinstall or update package
 	# 'Y' or 'y' will accept, any other keypress will reject
-	if [[ $OPTION == "UPDATE" ]]; then
-		read -p "$(printf "${LIGHTGREEN}//=> ${NC}${WHITE}Would you like to${NC} ${LIGHTGREEN}${OPTION}${NC} ${LIGHTRED}${PKG_NAME}${NC}${WHITE}?${NC} [Y/n] ")" -r
+	if [[ $option == "UPDATE" ]]; then
+		read -p "$(printf "${LIGHTGREEN}//=> ${NC}${WHITE}Would you like to${NC} ${LIGHTGREEN}${option}${NC} ${LIGHTRED}${pkg_name}${NC}${WHITE}?${NC} [Y/n] ")" -r
 	else
-		read -p "$(printf "${LIGHTGREEN}//=> ${NC}${WHITE}Would you like to${NC} ${LIGHTCYAN}${OPTION}${NC} ${LIGHTRED}${PKG_NAME}${NC}${WHITE}?${NC} [Y/n] ")" -r
+		read -p "$(printf "${LIGHTGREEN}//=> ${NC}${WHITE}Would you like to${NC} ${LIGHTCYAN}${option}${NC} ${LIGHTRED}${pkg_name}${NC}${WHITE}?${NC} [Y/n] ")" -r
 	fi
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
-		printf "${LIGHTGREEN}${OPT_GERUND} ${PKG_NAME}!${NC}\n"
+		printf "${LIGHTGREEN}${opt_gerund} ${pkg_name}!${NC}\n"
 		makepkg -sirc
 	else
-		# Convert OPT_GERUND to lower case
-		OPT_GERUND=$(echo $OPT_GERUND | tr '[:upper:]' '[:lower:]')
-		printf "${LIGHTRED}NOT ${OPT_GERUND} ${PKG_NAME}!${NC}\n\n"
+		# Convert opt_gerund to lower case
+		opt_gerund=$(echo $opt_gerund | tr '[:upper:]' '[:lower:]')
+		printf "${LIGHTRED}NOT ${opt_gerund} ${pkg_name}!${NC}\n\n"
 	fi
 
 	# Go back to top level directory for next iteration
@@ -142,7 +142,7 @@ mv ./aur-pkglist ./aur-pkglist.old
 touch aur-pkglist
 
 # Add package list to new package list file
-echo $PKG_LIST >> aur-pkglist
+echo $pkg_list >> aur-pkglist
 
 printf "${LIGHTCYAN}${END_SEPARATOR}${NC}\n"
 printf "${WHITE}//=> ${LIGHTGREEN}AUR Update complete!${NC}${WHITE}<=//${NC}\n"
