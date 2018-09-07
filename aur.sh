@@ -1,4 +1,34 @@
 #!/usr/bin/env bash
+
+
+# "-a" switch for shell script example
+# https://stackoverflow.com/questions/14447406/bash-shell-script-check-for-a-flag-and-grab-its-value
+# Example with -a switch that requires an argument :
+
+# #!/bin/bash
+
+# while getopts ":a:" opt; do
+#   case $opt in
+#     a)
+#       echo "-a was triggered, Parameter: $OPTARG" >&2
+#       ;;
+#     \?)
+#       echo "Invalid option: -$OPTARG" >&2
+#       exit 1
+#       ;;
+#     :)
+#       echo "Option -$OPTARG requires an argument." >&2
+#       exit 1
+#       ;;
+#   esac
+# done
+# Like greybot said(getopt != getopts) :
+
+# The external command getopt(1) is never safe to use, unless you know it is GNU getopt, you call it in a GNU-specific way, and you ensure that GETOPT_COMPATIBLE is not in the environment. Use getopts (shell builtin) instead, or simply loop over the positional parameters.
+
+
+
+
 LIGHTRED='\033[1;31m'
 LIGHTGREEN='\033[1;32m'
 YELLOW='\033[1;33m'
