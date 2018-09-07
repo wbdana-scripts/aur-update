@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 # "-a" switch for shell script example
 # https://stackoverflow.com/questions/14447406/bash-shell-script-check-for-a-flag-and-grab-its-value
 # Example with -a switch that requires an argument :
