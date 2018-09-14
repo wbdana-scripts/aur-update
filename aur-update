@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+aurpath=~/aur-packages
 
 # "-a" switch for shell script example
 # https://stackoverflow.com/questions/14447406/bash-shell-script-check-for-a-flag-and-grab-its-value
@@ -53,6 +54,9 @@ printf "Starting updates...\n${NC}"
 
 # Declare a variable to hold the package list
 pkg_list=""
+
+# cd into AUR repository directory
+cd ${aurpath}
 
 for d in ./*/; do
 	# Get current directory string length
@@ -166,9 +170,9 @@ done
 # Make package list and old package list files if they do not exist
 # Convert package list to old package list
 # Remake package list
-touch aur-pkglist aur-pkglist.old
-mv ./aur-pkglist ./aur-pkglist.old
-touch aur-pkglist
+touch ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
+mv ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
+touch ${aurpath}/aur-pkglist
 
 # Add package list to new package list file
 echo $pkg_list >> aur-pkglist
