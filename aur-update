@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-aurpath=~/aur-packages
 
 # "-a" switch for shell script example
 # https://stackoverflow.com/questions/14447406/bash-shell-script-check-for-a-flag-and-grab-its-value
