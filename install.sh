@@ -3,17 +3,15 @@
 install_aur_update ()
 {
 	echo "Add specified aur path to AUR-Update script..."
-	sed -i "2i aurpath=${aurpath}" ./aur-update # Working
+	sed -i "2i aurpath=${aurpath}" ./aur-update
 	echo "Making ~/.aur-update if not exists..."
-	mkdir -p $HOME/.aur-update # Working
+	mkdir -p $HOME/.aur-update
 	echo "Copying AUR-Update script to ~/.aur-update..."
-	cp ./aur-update $HOME/.aur-update # Working
+	cp ./aur-update $HOME/.aur-update
 	echo "Adding ~./aur-update to PATH..."
 	sed -i "1i # AUR-Update to \$PATH" "$shell_configuration_file"
 	sed -i "2i export PATH=\$HOME/.aur-update:\$PATH" "$shell_configuration_file"
-	# sleep 3
-	# echo "Sourcing $shell_configuration_file for immediate use..."
-	# source $shell_configuration_file
+	echo "Please restart your current shell or terminal session to enable aur-update"
 }
 
 LIGHTRED='\033[1;31m'
