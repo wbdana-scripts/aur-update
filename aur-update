@@ -191,9 +191,7 @@ echo $aurpath
 cd "$aurpath"
 echo $aurpath
 
-# TODO This logical path does not update aur-pkglist at all
 if [ -z ${pkg_name+x} ]; then
-	echo "Multiple"
 	for d in ./*/; do
 		loop_get_pkg_name_and_len
 		pkg_list=$(echo $pkg_list && echo && echo && echo $pkg_name)
@@ -214,7 +212,7 @@ if [ -z ${pkg_name+x} ]; then
 	print_end_message
 	exit 0
 elif [ -d $pkg_name ]; then
-	echo "In single"
+	# TODO This logical path does not update aur-pkglist at all
 	cd $pkg_name
 	# Set pkg_name_len outside of loop_get_pkg_name_and_len
 	pkg_name_len=${#pkg_name}
