@@ -25,8 +25,19 @@
 
 # The external command getopt(1) is never safe to use, unless you know it is GNU getopt, you call it in a GNU-specific way, and you ensure that GETOPT_COMPATIBLE is not in the environment. Use getopts (shell builtin) instead, or simply loop over the positional parameters.
 
-
-
+while getopts ":o:" opt; do
+	case ${opt} in
+		o )
+			package=$OPTARG
+		;;
+		\? )
+			echo "Invalid option: $OPTARG" 1>&2
+		;;
+		: )
+			echo "Invalid option: $OPTARG requires an argument" 1>&2
+		;;
+	esac
+done
 
 LIGHTRED='\033[1;31m'
 LIGHTGREEN='\033[1;32m'
@@ -49,6 +60,14 @@ LOGO="+=========================================================================
 printf "${LIGHTCYAN}${LOGO}${NC}\n\n"
 printf "${WHITE}By: wbdana\n"
 printf "    https://github.com/wbdana/aur-update\n\n"
+
+# TODO This logical path does not update aur-pkglist at all
+if [ -d $package ]; then
+	cd $package
+
+fi
+
+
 printf "Starting updates...\n${NC}"
 
 # Declare a variable to hold the package list
