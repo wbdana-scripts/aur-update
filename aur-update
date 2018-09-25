@@ -1,43 +1,5 @@
 #!/usr/bin/env bash
-
-# "-a" switch for shell script example
-# https://stackoverflow.com/questions/14447406/bash-shell-script-check-for-a-flag-and-grab-its-value
-# Example with -a switch that requires an argument :
-
-# #!/bin/bash
-
-# while getopts ":a:" opt; do
-#   case $opt in
-#     a)
-#       echo "-a was triggered, Parameter: $OPTARG" >&2
-#       ;;
-#     \?)
-#       echo "Invalid option: -$OPTARG" >&2
-#       exit 1
-#       ;;
-#     :)
-#       echo "Option -$OPTARG requires an argument." >&2
-#       exit 1
-#       ;;
-#   esac
-# done
-# Like greybot said(getopt != getopts) :
-
-# The external command getopt(1) is never safe to use, unless you know it is GNU getopt, you call it in a GNU-specific way, and you ensure that GETOPT_COMPATIBLE is not in the environment. Use getopts (shell builtin) instead, or simply loop over the positional parameters.
-
-while getopts ":o:" opt; do
-	case ${opt} in
-		o )
-			package=$OPTARG
-		;;
-		\? )
-			echo "Invalid option: $OPTARG" 1>&2
-		;;
-		: )
-			echo "Invalid option: $OPTARG requires an argument" 1>&2
-		;;
-	esac
-done
+aurpath=/home/wbdana/aur-packages
 
 LIGHTRED='\033[1;31m'
 LIGHTGREEN='\033[1;32m'
@@ -60,23 +22,10 @@ LOGO="+=========================================================================
 printf "${LIGHTCYAN}${LOGO}${NC}\n\n"
 printf "${WHITE}By: wbdana\n"
 printf "    https://github.com/wbdana/aur-update\n\n"
-
-# TODO This logical path does not update aur-pkglist at all
-if [ -d $package ]; then
-	cd $package
-
-fi
-
-
 printf "Starting updates...\n${NC}"
 
-# Declare a variable to hold the package list
-pkg_list=""
-
-# cd into AUR repository directory
-cd ${aurpath}
-
-for d in ./*/; do
+loop_get_pkg_name_and_len ()
+{
 	# Get current directory string length
 	dir_name_len=${#d}
 	# Remove './' from start of current directory
@@ -87,14 +36,10 @@ for d in ./*/; do
 	pkg_name=$(for i in $pkg_name; do echo ${i:0:$pkg_name_len - 1}; done)
 	# Reset pkg_name_len to length of package name string
 	pkg_name_len=${#pkg_name}
+}
 
-	# Add pkg_name to package list
-	# echo $pkg_name >> aur-pkglist
-	pkg_list=$(echo $pkg_list && echo && echo && echo $pkg_name)
-
-	# cd into AUR package directory
-	cd "$d"
-
+make_separator ()
+{
 	# Make a separator of length equal to
 	# "//=> ${pkg_name} <=//"
 	SEPARATOR_SIZE=`expr $pkg_name_len + 10`
@@ -102,13 +47,19 @@ for d in ./*/; do
 	for i in $(seq 1 $SEPARATOR_SIZE); do
 		MED_SEPARATOR+="="
 	done
+}
 
+print_formatted_dir_info ()
+{
 	# Print formatted directory info
 	printf "${LIGHTCYAN}${MED_SEPARATOR}${NC}\n"		
 	printf "${WHITE}//=>${NC} ${LIGHTRED}${pkg_name}${NC} ${WHITE}<=//${NC}\n"
 	printf "${LIGHTCYAN}${MED_SEPARATOR}${NC}\n"
 	printf "${YELLOW}pulling from git repository...${NC}\n"
+}
 
+git_pull ()
+{
 	# Store results of git pull for formatted output
 	pull=$(git pull)
 	if [ "$pull" == "Already up to date." ]; then
@@ -118,15 +69,20 @@ for d in ./*/; do
 	else
 		printf "${LIGHTCYAN}${pull}${NC}"
 	fi
-	echo && echo # New lines
+}
 
+get_new_ver ()
+{
 	# Get pkgver from PKGBUILD, excluding all but the first match
 	new_version=$(cat PKGBUILD | grep -m 1 "pkgver=")
 	# Strip "pkgver=" from version info
 	new_version_len=${#new_version}
 	new_version=$(for i in $new_version; do echo ${i:7:$new_version_len}; done)
 	new_version_len=${#new_version}
+}
 
+get_current_ver ()
+{
 	# Get currently installed package version from pacman
 	pacman_output=$(pacman -Qm | grep $pkg_name)
 	# Strip package name from version info
@@ -139,7 +95,10 @@ for d in ./*/; do
 		current_version=${current_version:0:diff}
 		current_version_len=`echo -n $current_version | wc -m`
 	fi
+}
 
+set_update_or_reinstall ()
+{
 	# If currently-installed version is the same as the new version,
 	# offer to reinstall; otherwise, offer to update
 	# Set verb variables accordingly
@@ -153,9 +112,10 @@ for d in ./*/; do
 		opt_gerund="Updating"
 		printf "${LIGHTCYAN}Current Version Number:${NC} ${YELLOW}${current_version}${NC}\n"
 	fi
-	echo # New line
+}
 
-
+print_pkgbuild ()
+{
 	# Grab contents of PKGBUILD
 	# and print for review
 	printf "${LIGHTCYAN}${MINI_SEPARATOR}${NC}\n"
@@ -163,8 +123,10 @@ for d in ./*/; do
 	printf "${LIGHTCYAN}${MINI_SEPARATOR}${NC}\n"
 	PKG=$(cat PKGBUILD)
 	printf "${WHITE}${PKG}${NC}"
-	echo && echo # New lines
+}
 
+prompt_update_or_reinstall ()
+{
 	# Offer to reinstall or update package
 	# 'Y' or 'y' will accept, any other keypress will reject
 	if [[ $option == "UPDATE" ]]; then
@@ -180,20 +142,205 @@ for d in ./*/; do
 		opt_gerund=$(echo $opt_gerund | tr '[:upper:]' '[:lower:]')
 		printf "${LIGHTRED}NOT ${opt_gerund} ${pkg_name}!${NC}\n\n"
 	fi
+}
 
-	# Go back to top level directory for next iteration
+update_aur_pkg ()
+{
+	make_separator
+	print_formatted_dir_info
+	git_pull
+	echo && echo # New lines
+	get_new_ver
+	get_current_ver
+	set_update_or_reinstall
+	echo # New line
+	print_pkgbuild
+	echo && echo # New lines
+	prompt_update_or_reinstall
 	cd ..;
+}
+
+while getopts ":o:" opt; do
+	case ${opt} in
+		o )
+			pkg_name=$OPTARG
+		;;
+		\? )
+			echo "Invalid option: $OPTARG" 1>&2
+		;;
+		: )
+			echo "Invalid option: $OPTARG requires an argument" 1>&2
+		;;
+	esac
 done
 
-# Make package list and old package list files if they do not exist
-# Convert package list to old package list
-# Remake package list
-touch ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
-mv ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
-touch ${aurpath}/aur-pkglist
+# Declare a variable to hold the package list
+pkg_list=""
 
-# Add package list to new package list file
-echo $pkg_list >> aur-pkglist
+# cd into AUR repository directory
+echo $aurpath
+cd "$aurpath"
+echo $aurpath
+
+# TODO This logical path does not update aur-pkglist at all
+if [ -d $pkg_name ]; then
+	echo "In single"
+	cd $pkg_name
+	# Set pkg_name_len outside of loop_get_pkg_name_and_len
+	pkg_name_len=${#pkg_name}
+	update_aur_pkg
+else
+	for d in ./*/; do
+		loop_get_pkg_name_and_len
+		pkg_list=$(echo $pkg_list && echo && echo && echo $pkg_name)
+		cd "$d"
+		update_aur_pkg
+
+		# Make package list and old package list files if they do not exist
+		# Convert package list to old package list
+		# Remake package list
+		touch ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
+		mv ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
+		touch ${aurpath}/aur-pkglist
+
+		# Add package list to new package list file
+		echo $pkg_list >> aur-pkglist
+	done
+fi
+
+
+# for d in ./*/; do
+# 	# # Get current directory string length
+# 	# dir_name_len=${#d}
+# 	# # Remove './' from start of current directory
+# 	# pkg_name=$(for i in $d; do echo ${i:2:$dir_name_len}; done)
+# 	# # Get length of package name plus trailing '/'
+# 	# pkg_name_len=${#pkg_name}
+# 	# # Remove trailing '/'
+# 	# pkg_name=$(for i in $pkg_name; do echo ${i:0:$pkg_name_len - 1}; done)
+# 	# # Reset pkg_name_len to length of package name string
+# 	# pkg_name_len=${#pkg_name}
+# 	loop_get_pkg_name_and_len
+
+# 	# Add pkg_name to package list
+# 	# echo $pkg_name >> aur-pkglist
+# 	pkg_list=$(echo $pkg_list && echo && echo && echo $pkg_name)
+
+# 	# cd into AUR package directory
+# 	cd "$d"
+
+# 	# # Make a separator of length equal to
+# 	# # "//=> ${pkg_name} <=//"
+# 	# SEPARATOR_SIZE=`expr $pkg_name_len + 10`
+# 	# MED_SEPARATOR=""
+# 	# for i in $(seq 1 $SEPARATOR_SIZE); do
+# 	# 	MED_SEPARATOR+="="
+# 	# done
+# 	make_separator
+
+# 	# # Print formatted directory info
+# 	# printf "${LIGHTCYAN}${MED_SEPARATOR}${NC}\n"		
+# 	# printf "${WHITE}//=>${NC} ${LIGHTRED}${pkg_name}${NC} ${WHITE}<=//${NC}\n"
+# 	# printf "${LIGHTCYAN}${MED_SEPARATOR}${NC}\n"
+# 	# printf "${YELLOW}pulling from git repository...${NC}\n"
+# 	print_formatted_dir_info
+
+# 	# # Store results of git pull for formatted output
+# 	# pull=$(git pull)
+# 	# if [ "$pull" == "Already up to date." ]; then
+# 	# 	printf "${LIGHTGREEN}${pull}${NC}"
+# 	# elif [ "$pull" == *"fatal" ]; then
+# 	# 	printf "${LIGHTRED}${pull}${NC}"
+# 	# else
+# 	# 	printf "${LIGHTCYAN}${pull}${NC}"
+# 	# fi
+# 	git_pull
+
+# 	echo && echo # New lines
+
+# 	# # Get pkgver from PKGBUILD, excluding all but the first match
+# 	# new_version=$(cat PKGBUILD | grep -m 1 "pkgver=")
+# 	# # Strip "pkgver=" from version info
+# 	# new_version_len=${#new_version}
+# 	# new_version=$(for i in $new_version; do echo ${i:7:$new_version_len}; done)
+# 	# new_version_len=${#new_version}
+# 	get_new_ver
+
+# 	# # Get currently installed package version from pacman
+# 	# pacman_output=$(pacman -Qm | grep $pkg_name)
+# 	# # Strip package name from version info
+# 	# current_version=${pacman_output:pkg_name_len}
+# 	# current_version_len=`echo -n $current_version | wc -m`
+
+# 	# # Remove trailing "-1", etc. from currently installed version info
+# 	# if [[ $current_version =~ .*-.* && "$current_version_len" -ne "$new_version_len" ]]; then
+# 	# 	diff=`expr $new_version_len - $current_version_len`
+# 	# 	current_version=${current_version:0:diff}
+# 	# 	current_version_len=`echo -n $current_version | wc -m`
+# 	# fi
+# 	get_current_ver
+
+# 	# # If currently-installed version is the same as the new version,
+# 	# # offer to reinstall; otherwise, offer to update
+# 	# # Set verb variables accordingly
+# 	# printf "${LIGHTCYAN}New Version Number:${NC}     ${LIGHTGREEN}${new_version}${NC}\n"
+# 	# if [[ "$current_version" =~ "$new_version" ]]; then
+# 	# 	option="REINSTALL"
+# 	# 	opt_gerund="Reinstalling"
+# 	# 	printf "${LIGHTCYAN}Current Version Number:${NC}${LIGHTGREEN}${current_version}${NC}\n"
+# 	# else
+# 	# 	option="UPDATE"
+# 	# 	opt_gerund="Updating"
+# 	# 	printf "${LIGHTCYAN}Current Version Number:${NC} ${YELLOW}${current_version}${NC}\n"
+# 	# fi
+# 	set_update_or_reinstall
+
+
+# 	echo # New line
+
+
+# 	# # Grab contents of PKGBUILD
+# 	# # and print for review
+# 	# printf "${LIGHTCYAN}${MINI_SEPARATOR}${NC}\n"
+# 	# printf "${WHITE}//=> ${NC}${LIGHTCYAN}PKGBUILD${NC}${WHITE} <=//${NC}\n"
+# 	# printf "${LIGHTCYAN}${MINI_SEPARATOR}${NC}\n"
+# 	# PKG=$(cat PKGBUILD)
+# 	# printf "${WHITE}${PKG}${NC}"
+# 	print_pkgbuild
+
+
+# 	echo && echo # New lines
+
+# 	# # Offer to reinstall or update package
+# 	# # 'Y' or 'y' will accept, any other keypress will reject
+# 	# if [[ $option == "UPDATE" ]]; then
+# 	# 	read -p "$(printf "${LIGHTGREEN}//=> ${NC}${WHITE}Would you like to${NC} ${LIGHTGREEN}${option}${NC} ${LIGHTRED}${pkg_name}${NC}${WHITE}?${NC} [Y/n] ")" -r
+# 	# else
+# 	# 	read -p "$(printf "${LIGHTGREEN}//=> ${NC}${WHITE}Would you like to${NC} ${LIGHTCYAN}${option}${NC} ${LIGHTRED}${pkg_name}${NC}${WHITE}?${NC} [Y/n] ")" -r
+# 	# fi
+# 	# if [[ $REPLY =~ ^[Yy]$ ]]; then
+# 	# 	printf "${LIGHTGREEN}${opt_gerund} ${pkg_name}!${NC}\n"
+# 	# 	makepkg -sirc
+# 	# else
+# 	# 	# Convert opt_gerund to lower case
+# 	# 	opt_gerund=$(echo $opt_gerund | tr '[:upper:]' '[:lower:]')
+# 	# 	printf "${LIGHTRED}NOT ${opt_gerund} ${pkg_name}!${NC}\n\n"
+# 	# fi
+# 	prompt_update_or_reinstall
+
+# 	# Go back to top level directory for next iteration
+# 	cd ..;
+# done
+
+# # Make package list and old package list files if they do not exist
+# # Convert package list to old package list
+# # Remake package list
+# touch ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
+# mv ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
+# touch ${aurpath}/aur-pkglist
+
+# # Add package list to new package list file
+# echo $pkg_list >> aur-pkglist
 
 printf "${LIGHTCYAN}${END_SEPARATOR}${NC}\n"
 printf "${WHITE}//=> ${LIGHTGREEN}AUR Update complete!${NC}${WHITE}<=//${NC}\n"
