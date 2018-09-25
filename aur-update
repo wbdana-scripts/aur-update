@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 aurpath=/home/wbdana/aur-packages
+aurpath=/home/wbdana/aur-packages
+aurpath=/home/wbdana/aur-packages
 
 LIGHTRED='\033[1;31m'
 LIGHTGREEN='\033[1;32m'
@@ -160,6 +162,13 @@ update_aur_pkg ()
 	cd ..;
 }
 
+print_end_message ()
+{
+	printf "${LIGHTCYAN}${END_SEPARATOR}${NC}\n"
+	printf "${WHITE}//=> ${LIGHTGREEN}AUR Update complete!${NC}${WHITE}<=//${NC}\n"
+	printf "${LIGHTCYAN}${END_SEPARATOR}${NC}\n"
+}
+
 while getopts ":o:" opt; do
 	case ${opt} in
 		o )
@@ -183,29 +192,38 @@ cd "$aurpath"
 echo $aurpath
 
 # TODO This logical path does not update aur-pkglist at all
-if [ -d $pkg_name ]; then
-	echo "In single"
-	cd $pkg_name
-	# Set pkg_name_len outside of loop_get_pkg_name_and_len
-	pkg_name_len=${#pkg_name}
-	update_aur_pkg
-else
+if [ -z ${pkg_name+x} ]; then
+	echo "Multiple"
 	for d in ./*/; do
 		loop_get_pkg_name_and_len
 		pkg_list=$(echo $pkg_list && echo && echo && echo $pkg_name)
 		cd "$d"
 		update_aur_pkg
-
-		# Make package list and old package list files if they do not exist
-		# Convert package list to old package list
-		# Remake package list
-		touch ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
-		mv ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
-		touch ${aurpath}/aur-pkglist
-
-		# Add package list to new package list file
-		echo $pkg_list >> aur-pkglist
 	done
+
+	# Make package list and old package list files if they do not exist
+	# Convert package list to old package list
+	# Remake package list
+	touch ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
+	mv ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
+	touch ${aurpath}/aur-pkglist
+
+	# Add package list to new package list file
+	echo $pkg_list >> aur-pkglist
+
+	print_end_message
+	exit 0
+elif [ -d $pkg_name ]; then
+	echo "In single"
+	cd $pkg_name
+	# Set pkg_name_len outside of loop_get_pkg_name_and_len
+	pkg_name_len=${#pkg_name}
+	update_aur_pkg
+	print_end_message
+	exit 0
+else
+	echo "ERROR - Aborting!"
+	exit 1
 fi
 
 
@@ -342,6 +360,6 @@ fi
 # # Add package list to new package list file
 # echo $pkg_list >> aur-pkglist
 
-printf "${LIGHTCYAN}${END_SEPARATOR}${NC}\n"
-printf "${WHITE}//=> ${LIGHTGREEN}AUR Update complete!${NC}${WHITE}<=//${NC}\n"
-printf "${LIGHTCYAN}${END_SEPARATOR}${NC}\n"
+# printf "${LIGHTCYAN}${END_SEPARATOR}${NC}\n"
+# printf "${WHITE}//=> ${LIGHTGREEN}AUR Update complete!${NC}${WHITE}<=//${NC}\n"
+# printf "${LIGHTCYAN}${END_SEPARATOR}${NC}\n"
