@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-aurpath=/home/wbdana/aur-packages
-aurpath=/home/wbdana/aur-packages
-aurpath=/home/wbdana/aur-packages
 
 LIGHTRED='\033[1;31m'
 LIGHTGREEN='\033[1;32m'
@@ -187,10 +184,9 @@ done
 pkg_list=""
 
 # cd into AUR repository directory
-echo $aurpath
 cd "$aurpath"
-echo $aurpath
 
+# If no package has been specified by '-o' flag ($pkg_name is unset)
 if [ -z ${pkg_name+x} ]; then
 	for d in ./*/; do
 		loop_get_pkg_name_and_len
@@ -211,6 +207,7 @@ if [ -z ${pkg_name+x} ]; then
 
 	print_end_message
 	exit 0
+# elif $pkg_name is a directory in $aurpath directory
 elif [ -d $pkg_name ]; then
 	# TODO This logical path does not update aur-pkglist at all
 	cd $pkg_name
