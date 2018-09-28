@@ -166,10 +166,44 @@ print_end_message ()
 	printf "${LIGHTCYAN}${END_SEPARATOR}${NC}\n"
 }
 
-while getopts ":o:" opt; do
+init_pkg_list ()
+{
+	# Declare a variable to hold the package list
+	pkg_list=""
+}
+
+add_pkg_name_to_pkglist ()
+{
+	pkg_list=$(echo $pkg_list && echo && echo && echo $pkg_name)
+}
+
+sync_pkglist ()
+{
+	# Make package list and old package list files if they do not exist
+	# Convert package list to old package list
+	# Remake package list
+	touch ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
+	mv ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
+	touch ${aurpath}/aur-pkglist
+
+	# Add package list to new package list file
+	echo $pkg_list >> aur-pkglist
+}
+
+while getopts ":so:" opt; do
 	case ${opt} in
 		o )
 			pkg_name=$OPTARG
+		;;
+		s )
+			init_pkg_list
+			for d in ./*/; do
+				loop_get_pkg_name_and_len
+				add_pkg_name_to_pkglist
+			done
+			sync_pkglist
+			print_end_message
+			exit 0
 		;;
 		\? )
 			echo "Invalid option: $OPTARG" 1>&2
@@ -180,30 +214,21 @@ while getopts ":o:" opt; do
 	esac
 done
 
-# Declare a variable to hold the package list
-pkg_list=""
-
 # cd into AUR repository directory
 cd "$aurpath"
 
 # If no package has been specified by '-o' flag ($pkg_name is unset)
 if [ -z ${pkg_name+x} ]; then
+	init_pkg_list
+
 	for d in ./*/; do
 		loop_get_pkg_name_and_len
-		pkg_list=$(echo $pkg_list && echo && echo && echo $pkg_name)
+		add_pkg_name_to_pkglist
 		cd "$d"
 		update_aur_pkg
 	done
 
-	# Make package list and old package list files if they do not exist
-	# Convert package list to old package list
-	# Remake package list
-	touch ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
-	mv ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
-	touch ${aurpath}/aur-pkglist
-
-	# Add package list to new package list file
-	echo $pkg_list >> aur-pkglist
+	sync_pkglist
 
 	print_end_message
 	exit 0
