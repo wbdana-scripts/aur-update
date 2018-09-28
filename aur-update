@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+aurpath=/home/wbdana/aur-packages
 LIGHTRED='\033[1;31m'
 LIGHTGREEN='\033[1;32m'
 YELLOW='\033[1;33m'
@@ -8,6 +8,7 @@ WHITE='\033[1;37m'
 NC='\033[0m'
 MINI_SEPARATOR="=================="
 END_SEPARATOR="============================="
+SYNC_END_SEPARATOR="==================================="
 LOGO="+=====================================================================================+
 |    _____   ____ _____________           ____ ___            .___       __           |
 |   /  _  \ |    |   \______   \         |    |   \______   __| _/____ _/  |_  ____   |
@@ -20,8 +21,7 @@ LOGO="+=========================================================================
 # Print logo, initialization text
 printf "${LIGHTCYAN}${LOGO}${NC}\n\n"
 printf "${WHITE}By: wbdana\n"
-printf "    https://github.com/wbdana/aur-update\n\n"
-printf "Starting updates...\n${NC}"
+printf "    https://github.com/wbdana/aur-update\n\n${NC}"
 
 loop_get_pkg_name_and_len ()
 {
@@ -166,10 +166,68 @@ print_end_message ()
 	printf "${LIGHTCYAN}${END_SEPARATOR}${NC}\n"
 }
 
-while getopts ":o:" opt; do
+print_end_sync ()
+{
+	printf "${LIGHTCYAN}${SYNC_END_SEPARATOR}${NC}\n"
+	printf "${WHITE}//=> ${LIGHTGREEN}AUR Update Sync complete!${NC}${WHITE}<=//${NC}\n"
+	printf "${LIGHTCYAN}${SYNC_END_SEPARATOR}${NC}\n"
+}
+
+init_pkg_list ()
+{
+	# Declare a variable to hold the package list
+	pkg_list=""
+}
+
+add_pkg_name_to_pkglist ()
+{
+	pkg_list=$(echo $pkg_list && echo && echo && echo $pkg_name)
+}
+
+sync_pkglist ()
+{
+	# Make package list and old package list files if they do not exist
+	# Convert package list to old package list
+	# Remake package list
+	touch ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
+	mv ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
+	touch ${aurpath}/aur-pkglist
+
+
+	# Add package list to new package list file
+	echo $pkg_list >> aur-pkglist
+}
+
+print_starting_updates ()
+{
+	printf "${WHITE}Starting updates...\n${NC}"
+}
+
+print_starting_only ()
+{
+	printf "${WHITE}Updating $pkg_name...\n${NC}"
+}
+
+print_starting_sync ()
+{
+	printf "${WHITE}Syncing aur-pkglist with current directories...${NC}\n"
+}
+
+while getopts ":so:" opt; do
 	case ${opt} in
 		o )
 			pkg_name=$OPTARG
+		;;
+		s )
+			print_starting_sync
+			init_pkg_list
+			for d in ./*/; do
+				loop_get_pkg_name_and_len
+				add_pkg_name_to_pkglist
+			done
+			sync_pkglist
+			print_end_sync
+			exit 0
 		;;
 		\? )
 			echo "Invalid option: $OPTARG" 1>&2
@@ -180,36 +238,27 @@ while getopts ":o:" opt; do
 	esac
 done
 
-# Declare a variable to hold the package list
-pkg_list=""
-
 # cd into AUR repository directory
 cd "$aurpath"
 
 # If no package has been specified by '-o' flag ($pkg_name is unset)
 if [ -z ${pkg_name+x} ]; then
+	init_pkg_list
+	print_starting_updates
 	for d in ./*/; do
 		loop_get_pkg_name_and_len
-		pkg_list=$(echo $pkg_list && echo && echo && echo $pkg_name)
+		add_pkg_name_to_pkglist
 		cd "$d"
 		update_aur_pkg
 	done
 
-	# Make package list and old package list files if they do not exist
-	# Convert package list to old package list
-	# Remake package list
-	touch ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
-	mv ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
-	touch ${aurpath}/aur-pkglist
-
-	# Add package list to new package list file
-	echo $pkg_list >> aur-pkglist
+	sync_pkglist
 
 	print_end_message
 	exit 0
 # elif $pkg_name is a directory in $aurpath directory
 elif [ -d $pkg_name ]; then
-	# TODO This logical path does not update aur-pkglist at all
+	print_starting_only
 	cd $pkg_name
 	# Set pkg_name_len outside of loop_get_pkg_name_and_len
 	pkg_name_len=${#pkg_name}
