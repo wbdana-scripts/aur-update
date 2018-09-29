@@ -129,11 +129,14 @@ prompt_update_or_reinstall ()
 {
 	# Offer to reinstall or update package
 	# 'Y' or 'y' will accept, any other keypress will reject
+
+	# First conditional specifies color of prompt text output
 	if [[ $option == "UPDATE" ]]; then
 		read -p "$(printf "${LIGHTGREEN}//=> ${NC}${WHITE}Would you like to${NC} ${LIGHTGREEN}${option}${NC} ${LIGHTRED}${pkg_name}${NC}${WHITE}?${NC} [Y/n] ")" -r
 	else
 		read -p "$(printf "${LIGHTGREEN}//=> ${NC}${WHITE}Would you like to${NC} ${LIGHTCYAN}${option}${NC} ${LIGHTRED}${pkg_name}${NC}${WHITE}?${NC} [Y/n] ")" -r
 	fi
+	# Second conditional triggers update/reinstall, or prints negative output
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
 		printf "${LIGHTGREEN}${opt_gerund} ${pkg_name}!${NC}\n"
 		makepkg -sirc
@@ -193,7 +196,6 @@ sync_pkglist ()
 	touch ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
 	mv ${aurpath}/aur-pkglist ${aurpath}/aur-pkglist.old
 	touch ${aurpath}/aur-pkglist
-
 
 	# Add package list to new package list file
 	echo $pkg_list >> aur-pkglist
