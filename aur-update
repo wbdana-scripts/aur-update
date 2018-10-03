@@ -225,19 +225,15 @@ fi
 eval set -- "$TEMP"
 unset TEMP
 
-# while getopts ":hso:" opt; do
 while true; do
 	case "$1" in
-	# case ${opt} in
 		'-h'|'--help' )
 			echo 'help!'
 			exit 0
 		;;
-		# o )
 		'-o'|'--only' )
 			pkg_name=$OPTARG
 		;;
-		# s )
 		'-s'|'--sync' )
 			print_starting_sync
 			init_pkg_list
