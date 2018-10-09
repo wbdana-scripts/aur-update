@@ -228,7 +228,13 @@ unset TEMP
 while true; do
 	case "$1" in
 		'-h'|'--help' )
-			echo 'help!'
+			echo 'Usage:'
+			echo 'aur-update [-o|--only] package-name'
+			echo '    Update only package-name'
+			echo 'aur-update [-s|--sync]'
+			echo '    Update aur-pkglist with latest packages in aurpath directory'
+			echo 'aur-update [-h|--help]'
+			echo '    Print this message and exit'
 			exit 0
 		;;
 		'-o'|'--only' )
