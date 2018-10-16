@@ -215,56 +215,12 @@ print_starting_sync ()
 	printf "${WHITE}Syncing aur-pkglist with current directories...${NC}\n"
 }
 
-TEMP=$(getopt -o 'hso:' --long 'help,sync,only:' -n 'AUR-Update Error' -- "$@")
-
-if [ $? -ne 0 ]; then
-	echo 'Terminating...' >&2
-	exit 1
-fi
-
-eval set -- "$TEMP"
-unset TEMP
-
-while true; do
-	case "$1" in
-		'-h'|'--help' )
-			echo 'Usage:'
-			echo 'aur-update [-o|--only] package-name'
-			echo '    Update only package-name'
-			echo 'aur-update [-s|--sync]'
-			echo '    Update aur-pkglist with latest packages in aurpath directory'
-			echo 'aur-update [-h|--help]'
-			echo '    Print this message and exit'
-			exit 0
-		;;
-		'-o'|'--only' )
-			pkg_name=$OPTARG
-		;;
-		'-s'|'--sync' )
-			print_starting_sync
-			init_pkg_list
-			for d in ./*/; do
-				loop_get_pkg_name_and_len
-				add_pkg_name_to_pkglist
-			done
-			sync_pkglist
-			print_end_sync
-			exit 0
-		;;
-		\? )
-			echo "Invalid option: $OPTARG" 1>&2
-		;;
-		: )
-			echo "Invalid option: $OPTARG requires an argument" 1>&2
-		;;
-	esac
-done
-
 # cd into AUR repository directory
 cd "$aurpath"
 
 # If no package has been specified by '-o' flag ($pkg_name is unset)
-if [ -z ${pkg_name+x} ]; then
+if [ -z $1 ]; then
+	echo HI
 	init_pkg_list
 	print_starting_updates
 	for d in ./*/; do
@@ -278,16 +234,69 @@ if [ -z ${pkg_name+x} ]; then
 
 	print_end_message
 	exit 0
-# elif $pkg_name is a directory in $aurpath directory
-elif [ -d $pkg_name ]; then
-	print_starting_only
-	cd $pkg_name
-	# Set pkg_name_len outside of loop_get_pkg_name_and_len
-	pkg_name_len=${#pkg_name}
-	update_aur_pkg
-	print_end_message
-	exit 0
+
 else
-	echo "ERROR - Aborting!"
-	exit 1
+	TEMP=$(getopt -o 'hso:' --long 'help,sync,only:' -n 'AUR-Update Error' -- "$@")
+
+	if [ $? -ne 0 ]; then
+		echo 'Terminating...' >&2
+		exit 1
+	fi
+
+	eval set -- "$TEMP"
+	unset TEMP
+
+	while true; do
+		case "$1" in
+			'-h'|'--help' )
+				echo 'Usage:'
+				echo 'aur-update [-o|--only] package-name'
+				echo '    Update only package-name'
+				echo 'aur-update [-s|--sync]'
+				echo '    Update aur-pkglist with latest packages in aurpath directory'
+				echo 'aur-update [-h|--help]'
+				echo '    Print this message and exit'
+				exit 0
+			;;
+			'-o'|'--only' )
+				pkg_name=$OPTARG
+				print_starting_only
+				cd $pkg_name
+				# Set pkg_name_len outside of loop_get_pkg_name_and_len
+				pkg_name_len=${#pkg_name}
+				update_aur_pkg
+				print_end_message
+				exit 0
+			;;
+			'-s'|'--sync' )
+				print_starting_sync
+				init_pkg_list
+				for d in ./*/; do
+					loop_get_pkg_name_and_len
+					add_pkg_name_to_pkglist
+				done
+				sync_pkglist
+				print_end_sync
+				exit 0
+			;;
+			\? )
+				echo "Invalid option: $OPTARG" 1>&2
+			;;
+			: )
+				echo "Invalid option: $OPTARG requires an argument" 1>&2
+			;;
+		esac
+	done
 fi
+
+
+
+
+
+# # elif $pkg_name is a directory in $aurpath directory
+# elif [ -d $pkg_name ]; then
+	
+# else
+# 	echo "ERROR - Aborting!"
+# 	exit 1
+# fi
