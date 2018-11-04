@@ -220,7 +220,6 @@ cd "$aurpath"
 
 # If no package has been specified by '-o' flag ($pkg_name is unset)
 if [ -z $1 ]; then
-	echo HI
 	init_pkg_list
 	print_starting_updates
 	for d in ./*/; do
@@ -260,6 +259,8 @@ else
 			;;
 			'-o'|'--only' )
 				pkg_name=$OPTARG
+				echo $OPTARG
+				echo $pkg_name
 				print_starting_only
 				cd $pkg_name
 				# Set pkg_name_len outside of loop_get_pkg_name_and_len
