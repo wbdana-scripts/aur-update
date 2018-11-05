@@ -215,6 +215,34 @@ print_starting_sync ()
 	printf "${WHITE}Syncing aur-pkglist with current directories...${NC}\n"
 }
 
+print_installing_new ()
+{
+	printf "${WHITE}Installing new package ${RED}$pkg_name${WHITE}...${NC}\n"
+}
+
+build_target_path ()
+{
+	first="https://aur.archlinux.org/"
+	ext=".git"
+	path="$first$pkg_name$ext"
+}
+
+fetch_target ()
+{
+	git clone "$path"
+}
+
+install_new () {
+	cd "$pkg_name"
+	makepkg -sirc
+}
+
+print_install_complete ()
+{
+	printf "${WHITE}Installation of ${RED}${pkg_name}${WHITE} successfully completed!${NC}\n"
+}
+
+
 # cd into AUR repository directory
 cd "$aurpath"
 
@@ -246,7 +274,7 @@ else
 	# 		exit 1 ;;
 	# 	esac
 	# done
-	while getopts hso: OPT; do
+	while getopts hso:S: OPT; do
 		case "$OPT" in
 			h )
 				echo 'Usage:'
@@ -260,11 +288,6 @@ else
 			;;
 			o )
 				pkg_name=$OPTARG
-				echo HIT ONLY
-				echo $OPTARG
-				echo SET
-				echo $pkg_name
-				echo DONE SET
 				print_starting_only
 				cd $pkg_name
 				# Set pkg_name_len outside of loop_get_pkg_name_and_len
@@ -272,6 +295,14 @@ else
 				update_aur_pkg
 				print_end_message
 				exit 0
+			;;
+			S )
+				pkg_name=$OPTARG
+				build_target_path
+				fetch_target
+				install_new
+				sync_pkglist
+				print_install_complete
 			;;
 			s )
 				print_starting_sync
