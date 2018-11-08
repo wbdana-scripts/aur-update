@@ -156,9 +156,14 @@ update_aur_pkg ()
 	get_current_ver
 	set_update_or_reinstall
 	echo # New line
-	print_pkgbuild
-	echo && echo # New lines
-	prompt_update_or_reinstall
+	# If $bypass = true && $option="REINSTALL", move to next pkg
+	if [[ $option == "REINSTALL" ]] && [[ $bypass == true ]]; then
+		printf "${LIGHTRED}${pkg_name}${WHITE} is up to date; skipping.\n"
+	else
+		print_pkgbuild
+		echo && echo # New lines
+		prompt_update_or_reinstall
+	fi
 	cd ..;
 }
 
@@ -242,12 +247,8 @@ print_install_complete ()
 	printf "${WHITE}Installation of ${RED}${pkg_name}${WHITE} successfully completed!${NC}\n"
 }
 
-
-# cd into AUR repository directory
-cd "$aurpath"
-
-# If no package has been specified by '-o' flag ($pkg_name is unset)
-if [ -z $1 ]; then
+loop_update_packages ()
+{
 	init_pkg_list
 	print_starting_updates
 	for d in ./*/; do
@@ -256,25 +257,20 @@ if [ -z $1 ]; then
 		cd "$d"
 		update_aur_pkg
 	done
-
 	sync_pkglist
-
 	print_end_message
 	exit 0
+}
+
+
+# cd into AUR repository directory
+cd "$aurpath"
+
+# If no package has been specified by '-o' flag ($pkg_name is unset)
+if [ -z $1 ]; then
+	loop_update_packages
 else
-	# while getopts c:d: OPT; do
-	# 	case "$OPT" in
-	# 	d)
-	# 		DIR="$OPTARG" ;;
-	# 	c)
-	# 		COMMAND="$OPTARG" ;;
-	# 	[?])
-	# 		# got invalid option
-	# 		echo "Usage: $0 [-d directory] [-c command]" >&2
-	# 		exit 1 ;;
-	# 	esac
-	# done
-	while getopts hso:S: OPT; do
+	while getopts hsbo:S: OPT; do
 		case "$OPT" in
 			h )
 				echo 'Usage:'
@@ -315,6 +311,10 @@ else
 				print_end_sync
 				exit 0
 			;;
+			b )
+				bypass=true
+				loop_update_packages
+			;;
 			\? )
 				echo "Invalid option: $OPTARG" 1>&2
 			;;
@@ -324,15 +324,3 @@ else
 		esac
 	done
 fi
-
-
-
-
-
-# # elif $pkg_name is a directory in $aurpath directory
-# elif [ -d $pkg_name ]; then
-	
-# else
-# 	echo "ERROR - Aborting!"
-# 	exit 1
-# fi
