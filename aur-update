@@ -274,11 +274,17 @@ else
 		case "$OPT" in
 			h )
 				echo 'Usage:'
-				echo 'aur-update [-o|--only] package-name'
+				echo 'aur-update'
+				echo '    Update all packages'
+				echo 'aur-update -S package-name'
+				echo '    Install package-name'
+				echo 'aur-update -o package-name'
 				echo '    Update only package-name'
-				echo 'aur-update [-s|--sync]'
+				echo 'aur-update -b'
+				echo '    Update all packages, bypassing optional rebuilds'
+				echo 'aur-update -s'
 				echo '    Update aur-pkglist with latest packages in aurpath directory'
-				echo 'aur-update [-h|--help]'
+				echo 'aur-update -h'
 				echo '    Print this message and exit'
 				exit 0
 			;;
