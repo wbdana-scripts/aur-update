@@ -222,7 +222,17 @@ print_starting_sync ()
 
 print_installing_new ()
 {
-	printf "${WHITE}Installing new package ${RED}$pkg_name${WHITE}...${NC}\n"
+	printf "${WHITE}Installing new package ${LIGHTRED}$pkg_name${WHITE}...${NC}\n"
+}
+
+print_removing_package ()
+{
+	printf "${WHITE}Removing package ${LIGHTRED}$pkg_name${WHITE}...${NC}\n"	
+}
+
+print_removing_git ()
+{
+	printf "${WHITE}Removing git repository for package ${LIGHTRED}$pkg_name${WHITE}...${NC}\n"	
 }
 
 build_target_path ()
@@ -245,6 +255,11 @@ install_new () {
 print_install_complete ()
 {
 	printf "${WHITE}Installation of ${RED}${pkg_name}${WHITE} successfully completed!${NC}\n"
+}
+
+print_removal_complete ()
+{
+	printf "${WHITE}Removal of ${LIGHTRED}${pkg_name}${WHITE} successfully completed!${NC}\n"
 }
 
 loop_update_packages ()
@@ -270,7 +285,7 @@ cd "$aurpath"
 if [ -z $1 ]; then
 	loop_update_packages
 else
-	while getopts hsbo:S: OPT; do
+	while getopts hsbo:S:R: OPT; do
 		case "$OPT" in
 			h )
 				echo 'Usage:'
@@ -305,6 +320,17 @@ else
 				install_new
 				sync_pkglist
 				print_install_complete
+			;;
+			R )
+				pkg_name=$OPTARG
+				print_removing_package
+				sudo pacman -Rs $pkg_name
+				print_removing_git
+				rm -rf $pkg_name
+				print_starting_sync
+				sync_pkglist
+				print_removal_complete
+				exit 0
 			;;
 			s )
 				print_starting_sync
