@@ -293,6 +293,8 @@ else
 				echo '    Update all packages'
 				echo 'aur-update -S package-name'
 				echo '    Install package-name'
+				echo 'aur-update -R package-name'
+				echo '    Uninstall package-name'
 				echo 'aur-update -o package-name'
 				echo '    Update only package-name'
 				echo 'aur-update -b'
