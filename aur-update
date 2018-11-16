@@ -288,21 +288,21 @@ else
 	while getopts hsbo:S:R: OPT; do
 		case "$OPT" in
 			h )
-				echo 'Usage:'
-				echo 'aur-update'
-				echo '    Update all packages'
-				echo 'aur-update -S package-name'
-				echo '    Install package-name'
-				echo 'aur-update -R package-name'
-				echo '    Uninstall package-name'
-				echo 'aur-update -o package-name'
-				echo '    Update only package-name'
-				echo 'aur-update -b'
-				echo '    Update all packages, bypassing optional rebuilds'
-				echo 'aur-update -s'
-				echo '    Update aur-pkglist with latest packages in aurpath directory'
-				echo 'aur-update -h'
-				echo '    Print this message and exit'
+				printf "${LIGHTGREEN}Usage:${NC}\n"
+				printf "${LIGHTCYAN}aur-update${NC}"
+				printf "                      Update all packages${NC}\n"
+				printf "${LIGHTCYAN}aur-update -S ${YELLOW}[${LIGHTRED}package-name${YELLOW}]${NC}"
+				printf "    Install package-name${NC}\n"
+				printf "${LIGHTCYAN}aur-update -R ${YELLOW}[${LIGHTRED}package-name${YELLOW}]${NC}"
+				printf "    Uninstall package-name${NC}\n"
+				printf "${LIGHTCYAN}aur-update -o ${YELLOW}[${LIGHTRED}package-name${YELLOW}]${NC}"
+				printf "    Update only package-name${NC}\n"
+				printf "${LIGHTCYAN}aur-update -b${NC}"
+				printf "                   Update all packages, bypassing optional rebuilds${NC}\n"
+				printf "${LIGHTCYAN}aur-update -s${NC}"
+				printf "                   Update aur-pkglist with latest packages in aurpath directory${NC}\n"
+				printf "${LIGHTCYAN}aur-update -h${NC}"
+				printf "                   Print this message and exit${NC}\n"
 				exit 0
 			;;
 			o )
