@@ -18,12 +18,14 @@ This will install AUR-Update to `~/.aur-update`, and add that directory to your 
 
 After installation, run `aur-update` and follow the prompts on screen in order to loop through your AUR packages and update them. Expanded functionality includes:
 
-- aur-update -S [package-name]    Install package-name
-- aur-update -R [package-name]    Uninstall package-name
-- aur-update -o [package-name]    Update only package-name
-- aur-update -b                   Update all packages, bypassing optional rebuilds
-- aur-update -s                   Update aur-pkglist with latest packages in aurpath directory
-- aur-update -h                   Print help
+```
+aur-update -S [package-name]    Install package-name
+aur-update -R [package-name]    Uninstall package-name
+aur-update -o [package-name]    Update only package-name
+aur-update -b                   Update all packages, bypassing optional rebuilds
+aur-update -s                   Update aur-pkglist with latest packages in aurpath directory
+aur-update -h                   Print help
+```
 
 ## Comments, Questions, Issues
 
