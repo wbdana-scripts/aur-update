@@ -8,8 +8,6 @@ This is a simple script to update AUR packages. It assumes that all of your AUR 
 
 ## Installation
 
-As of 2018.09.15, AUR-Update now features an installer. You can still use the old instructions below, but these instructions will allow you to run `aur-update` from anywhere.
-
 1. Clone the repo.
 2. Make the installer and script executable: `chmod +x ./install.sh aur-update`
 3. Run the installer: `./install.sh`
@@ -18,9 +16,7 @@ This will install AUR-Update to `~/.aur-update`, and add that directory to your 
 
 ## Usage
 
-#### New Usage Instructions
 After installation, run `aur-update` and follow the prompts on screen.
-
 
 ## Comments, Questions, Issues
 
