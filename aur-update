@@ -189,7 +189,7 @@ init_pkg_list ()
 
 add_pkg_name_to_pkglist ()
 {
-	pkg_list=$(echo $pkg_list && echo && echo && echo $pkg_name)
+	pkg_list=$(echo $pkg_list $pkg_name)
 }
 
 sync_pkglist ()
@@ -277,6 +277,16 @@ loop_update_packages ()
 	exit 0
 }
 
+list_installed ()
+{
+	printf "${LIGHTCYAN}Listing installed packages...${NC}\n"
+	for d in ./*/; do
+		loop_get_pkg_name_and_len
+		printf "${WHITE}${pkg_name}${NC}\n"
+	done
+	exit 0
+}
+
 
 # cd into AUR repository directory
 cd "$aurpath"
@@ -285,7 +295,7 @@ cd "$aurpath"
 if [ -z $1 ]; then
 	loop_update_packages
 else
-	while getopts hsbo:S:R: OPT; do
+	while getopts hsblo:S:R: OPT; do
 		case "$OPT" in
 			h )
 				printf "${LIGHTGREEN}Usage:${NC}\n"
@@ -348,6 +358,9 @@ else
 			b )
 				bypass=true
 				loop_update_packages
+			;;
+			l )
+				list_installed
 			;;
 			\? )
 				echo "Invalid option: $OPTARG" 1>&2
