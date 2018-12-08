@@ -23,292 +23,35 @@ printf "${LIGHTCYAN}${LOGO}${NC}\n\n"
 printf "${WHITE}By: wbdana\n"
 printf "    https://github.com/wbdana/aur-update\n\n${NC}"
 
-loop_get_pkg_name_and_len ()
-{
-	# Get current directory string length
-	dir_name_len=${#d}
-	# Remove './' from start of current directory
-	pkg_name=$(for i in $d; do echo ${i:2:$dir_name_len}; done)
-	# Get length of package name plus trailing '/'
-	pkg_name_len=${#pkg_name}
-	# Remove trailing '/'
-	pkg_name=$(for i in $pkg_name; do echo ${i:0:$pkg_name_len - 1}; done)
-	# Reset pkg_name_len to length of package name string
-	pkg_name_len=${#pkg_name}
-}
-
-make_separator ()
-{
-	# Make a separator of length equal to
-	# "//=> ${pkg_name} <=//"
-	SEPARATOR_SIZE=`expr $pkg_name_len + 10`
-	MED_SEPARATOR=""
-	for i in $(seq 1 $SEPARATOR_SIZE); do
-		MED_SEPARATOR+="="
-	done
-}
-
-print_formatted_dir_info ()
-{
-	# Print formatted directory info
-	printf "${LIGHTCYAN}${MED_SEPARATOR}${NC}\n"		
-	printf "${WHITE}//=>${NC} ${LIGHTRED}${pkg_name}${NC} ${WHITE}<=//${NC}\n"
-	printf "${LIGHTCYAN}${MED_SEPARATOR}${NC}\n"
-	printf "${YELLOW}pulling from git repository...${NC}\n"
-}
-
-git_pull ()
-{
-	# Store results of git pull for formatted output
-	pull=$(git pull)
-	if [ "$pull" == "Already up to date." ]; then
-		printf "${LIGHTGREEN}${pull}${NC}"
-	elif [ "$pull" == *"fatal" ]; then
-		printf "${LIGHTRED}${pull}${NC}"
-	else
-		printf "${LIGHTCYAN}${pull}${NC}"
-	fi
-}
-
-get_new_ver ()
-{
-	# Get pkgver from PKGBUILD, excluding all but the first match
-	new_version=$(cat PKGBUILD | grep -m 1 "pkgver=")
-	# Strip "pkgver=" from version info
-	new_version_len=${#new_version}
-	new_version=$(for i in $new_version; do echo ${i:7:$new_version_len}; done)
-	new_version_len=${#new_version}
-}
-
-get_current_ver ()
-{
-	# Get currently installed package version from pacman
-	pacman_output=$(pacman -Qm | grep $pkg_name)
-	# Strip package name from version info
-	current_version=${pacman_output:pkg_name_len}
-	current_version_len=`echo -n $current_version | wc -m`
-
-	# Remove trailing "-1", etc. from currently installed version info
-	if [[ $current_version =~ .*-.* && "$current_version_len" -ne "$new_version_len" ]]; then
-		diff=`expr $new_version_len - $current_version_len`
-		current_version=${current_version:0:diff}
-		current_version_len=`echo -n $current_version | wc -m`
-	fi
-}
-
-set_update_or_reinstall ()
-{
-	# If currently-installed version is the same as the new version,
-	# offer to reinstall; otherwise, offer to update
-	# Set verb variables accordingly
-	printf "${LIGHTCYAN}New Version Number:${NC}     ${LIGHTGREEN}${new_version}${NC}\n"
-	if [[ "$current_version" =~ "$new_version" ]]; then
-		option="REINSTALL"
-		opt_gerund="Reinstalling"
-		printf "${LIGHTCYAN}Current Version Number:${NC}${LIGHTGREEN}${current_version}${NC}\n"
-	else
-		option="UPDATE"
-		opt_gerund="Updating"
-		printf "${LIGHTCYAN}Current Version Number:${NC} ${YELLOW}${current_version}${NC}\n"
-	fi
-}
-
-print_pkgbuild ()
-{
-	# Grab contents of PKGBUILD
-	# and print for review
-	printf "${LIGHTCYAN}${MINI_SEPARATOR}${NC}\n"
-	printf "${WHITE}//=> ${NC}${LIGHTCYAN}PKGBUILD${NC}${WHITE} <=//${NC}\n"
-	printf "${LIGHTCYAN}${MINI_SEPARATOR}${NC}\n"
-	PKG=$(cat PKGBUILD)
-	printf "${WHITE}${PKG}${NC}"
-}
-
-prompt_update_or_reinstall ()
-{
-	# Offer to reinstall or update package
-	# 'Y' or 'y' will accept, any other keypress will reject
-
-	# First conditional specifies color of prompt text output
-	if [[ $option == "UPDATE" ]]; then
-		read -p "$(printf "${LIGHTGREEN}//=> ${NC}${WHITE}Would you like to${NC} ${LIGHTGREEN}${option}${NC} ${LIGHTRED}${pkg_name}${NC}${WHITE}?${NC} [Y/n] ")" -r
-	else
-		read -p "$(printf "${LIGHTGREEN}//=> ${NC}${WHITE}Would you like to${NC} ${LIGHTCYAN}${option}${NC} ${LIGHTRED}${pkg_name}${NC}${WHITE}?${NC} [Y/n] ")" -r
-	fi
-	# Second conditional triggers update/reinstall, or prints negative output
-	if [[ $REPLY =~ ^[Yy]$ ]]; then
-		printf "${LIGHTGREEN}${opt_gerund} ${pkg_name}!${NC}\n"
-		makepkg -sirc
-	else
-		# Convert opt_gerund to lower case
-		opt_gerund=$(echo $opt_gerund | tr '[:upper:]' '[:lower:]')
-		printf "${LIGHTRED}NOT ${opt_gerund} ${pkg_name}!${NC}\n\n"
-	fi
-}
-
-update_aur_pkg ()
-{
-	make_separator
-	print_formatted_dir_info
-	git_pull
-	echo && echo # New lines
-	get_new_ver
-	get_current_ver
-	set_update_or_reinstall
-	echo # New line
-	# If $bypass = true && $option="REINSTALL", move to next pkg
-	if [[ $option == "REINSTALL" ]] && [[ $bypass == true ]]; then
-		printf "${LIGHTRED}${pkg_name}${WHITE} is up to date; skipping.\n"
-	else
-		print_pkgbuild
-		echo && echo # New lines
-		prompt_update_or_reinstall
-	fi
-	cd ..;
-}
-
-print_end_message ()
-{
-	printf "${LIGHTCYAN}${END_SEPARATOR}${NC}\n"
-	printf "${WHITE}//=> ${LIGHTGREEN}AUR Update complete!${NC}${WHITE}<=//${NC}\n"
-	printf "${LIGHTCYAN}${END_SEPARATOR}${NC}\n"
-}
-
-print_end_sync ()
-{
-	printf "${LIGHTCYAN}${SYNC_END_SEPARATOR}${NC}\n"
-	printf "${WHITE}//=> ${LIGHTGREEN}AUR Update Sync complete!${NC}${WHITE}<=//${NC}\n"
-	printf "${LIGHTCYAN}${SYNC_END_SEPARATOR}${NC}\n"
-}
-
-init_pkg_list ()
-{
-	# Declare a variable to hold the package list
-	pkg_list=""
-}
-
-add_pkg_name_to_pkglist ()
-{
-	pkg_list=$(echo $pkg_list $pkg_name)
-}
-
-sync_pkglist ()
-{
-	# Make package list and old package list files if they do not exist
-	# Convert package list to old package list
-	# Remake package list
-	touch aur-pkglist aur-pkglist.old
-	mv aur-pkglist aur-pkglist.old
-	touch aur-pkglist
-
-	# Add package list to new package list file
-	echo $pkg_list >> aur-pkglist
-}
-
-print_starting_updates ()
-{
-	printf "${WHITE}Starting updates...\n${NC}"
-}
-
-print_starting_only ()
-{
-	printf "${WHITE}Updating $pkg_name...\n${NC}"
-}
-
-print_starting_sync ()
-{
-	printf "${WHITE}Syncing aur-pkglist with current directories...${NC}\n"
-}
-
-print_installing_new ()
-{
-	printf "${WHITE}Installing new package ${LIGHTRED}$pkg_name${WHITE}...${NC}\n"
-}
-
-print_removing_package ()
-{
-	printf "${WHITE}Removing package ${LIGHTRED}$pkg_name${WHITE}...${NC}\n"	
-}
-
-print_removing_git ()
-{
-	printf "${WHITE}Removing git repository for package ${LIGHTRED}$pkg_name${WHITE}...${NC}\n"	
-}
-
-build_target_path ()
-{
-	first="https://aur.archlinux.org/"
-	ext=".git"
-	path="$first$pkg_name$ext"
-}
-
-fetch_target ()
-{
-	git clone "$path"
-}
-
-install_new () {
-	cd "$pkg_name"
-	makepkg -sirc
-}
-
-print_install_complete ()
-{
-	printf "${WHITE}Installation of ${RED}${pkg_name}${WHITE} successfully completed!${NC}\n"
-}
-
-print_removal_complete ()
-{
-	printf "${WHITE}Removal of ${LIGHTRED}${pkg_name}${WHITE} successfully completed!${NC}\n"
-}
-
-loop_update_packages ()
-{
-	init_pkg_list
-	print_starting_updates
-	for d in ./*/; do
-		loop_get_pkg_name_and_len
-		add_pkg_name_to_pkglist
-		cd "$d"
-		update_aur_pkg
-	done
-	sync_pkglist
-	print_end_message
-	exit 0
-}
-
-determine_longest_package_name_len ()
-{
-	longest_pkg_name_len=0
-	for d in ./*/; do
-		loop_get_pkg_name_and_len
-		if [ "$pkg_name_len" -gt "$longest_pkg_name_len" ]; then
-			longest_pkg_name_len="$pkg_name_len"
-		fi
-	done
-}
-
-list_installed ()
-{
-	printf "${LIGHTRED}Listing installed packages...${NC}\n"
-	determine_longest_package_name_len
-	max_spaces=`expr $longest_pkg_name_len + 4`
-	for d in ./*/; do
-		loop_get_pkg_name_and_len
-		cd "$d"
-		get_new_ver
-		get_current_ver
-		spaces=""
-		spaces_to_add=`expr $max_spaces - $pkg_name_len`
-		for i in $(seq 1 $spaces_to_add); do
-			spaces+=" "
-		done
-		printf "${WHITE}${pkg_name}${spaces}${LIGHTCYAN}${current_version}${NC}\n"
-		cd ..
-	done
-	exit 0
-}
-
+. ./loop_get_pkg_name_and_len.sh -- source-only
+. ./make_separator.sh --source-only
+. ./print_formatted_dir_info.sh --source-only
+. ./git_pull.sh --source-only
+. ./get_new_ver.sh --source-only
+. ./get_current_ver.sh --source-only
+. ./set_update_or_reinstall.sh --source-only
+. ./print_pkgbuild.sh --source-only
+. ./prompt_update_or_reinstall.sh --source-only
+. ./update_aur_pkg.sh --source-only
+. ./print_end_message.sh --source-only
+. ./print_end_sync.sh --source-only
+. ./init_pkg_list.sh --source-only
+. ./add_pkg_name_to_pkg_list.sh --source-only
+. ./sync_pkg_list.sh --source-only
+. ./print_starting_updates.sh --source-only
+. ./print_starting_only.sh --source-only
+. ./print_starting_sync.sh --source-only
+. ./print_installing_new.sh --source-only
+. ./print_removing_package.sh --source-only
+. ./print_removing_git.sh --source-only
+. ./build_target_path.sh --source-only
+. ./fetch_target.sh --source-only
+. ./install_new.sh --source-only
+. ./print_install_complete.sh --source-only
+. ./print_removal_complete.sh --source-only
+. ./loop_update_packages.sh --source-only
+. ./determine_longest_package_name_len.sh --source-only
+. ./list_installed.sh --source-only
 
 # cd into AUR repository directory
 cd "$aurpath"
@@ -352,7 +95,7 @@ else
 				build_target_path
 				fetch_target
 				install_new
-				sync_pkglist
+				sync_pkg_list
 				print_install_complete
 			;;
 			R )
@@ -362,7 +105,7 @@ else
 				print_removing_git
 				rm -rf $pkg_name
 				print_starting_sync
-				sync_pkglist
+				sync_pkg_list
 				print_removal_complete
 				exit 0
 			;;
@@ -371,9 +114,9 @@ else
 				init_pkg_list
 				for d in ./*/; do
 					loop_get_pkg_name_and_len
-					add_pkg_name_to_pkglist
+					add_pkg_name_to_pkg_list
 				done
-				sync_pkglist
+				sync_pkg_list
 				print_end_sync
 				exit 0
 			;;
