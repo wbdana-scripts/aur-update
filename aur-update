@@ -23,35 +23,35 @@ printf "${LIGHTCYAN}${LOGO}${NC}\n\n"
 printf "${WHITE}By: wbdana\n"
 printf "    https://github.com/wbdana/aur-update\n\n${NC}"
 
-. ./loop_get_pkg_name_and_len.sh -- source-only
-. ./make_separator.sh --source-only
-. ./print_formatted_dir_info.sh --source-only
-. ./git_pull.sh --source-only
-. ./get_new_ver.sh --source-only
+. ./add_pkg_name_to_pkg_list.sh --source-only
+. ./build_target_path.sh --source-only
+. ./determine_longest_package_name_len.sh --source-only
+. ./fetch_target.sh --source-only
 . ./get_current_ver.sh --source-only
-. ./set_update_or_reinstall.sh --source-only
-. ./print_pkgbuild.sh --source-only
-. ./prompt_update_or_reinstall.sh --source-only
-. ./update_aur_pkg.sh --source-only
+. ./get_new_ver.sh --source-only
+. ./git_pull.sh --source-only
+. ./init_pkg_list.sh --source-only
+. ./install_new.sh --source-only
+. ./list_installed.sh --source-only
+. ./loop_get_pkg_name_and_len.sh -- source-only
+. ./loop_update_packages.sh --source-only
+. ./make_separator.sh --source-only
 . ./print_end_message.sh --source-only
 . ./print_end_sync.sh --source-only
-. ./init_pkg_list.sh --source-only
-. ./add_pkg_name_to_pkg_list.sh --source-only
-. ./sync_pkg_list.sh --source-only
-. ./print_starting_updates.sh --source-only
+. ./print_formatted_dir_info.sh --source-only
+. ./print_install_complete.sh --source-only
+. ./print_installing_new.sh --source-only
+. ./print_pkgbuild.sh --source-only
+. ./print_removal_complete.sh --source-only
+. ./print_removing_git.sh --source-only
+. ./print_removing_package.sh --source-only
 . ./print_starting_only.sh --source-only
 . ./print_starting_sync.sh --source-only
-. ./print_installing_new.sh --source-only
-. ./print_removing_package.sh --source-only
-. ./print_removing_git.sh --source-only
-. ./build_target_path.sh --source-only
-. ./fetch_target.sh --source-only
-. ./install_new.sh --source-only
-. ./print_install_complete.sh --source-only
-. ./print_removal_complete.sh --source-only
-. ./loop_update_packages.sh --source-only
-. ./determine_longest_package_name_len.sh --source-only
-. ./list_installed.sh --source-only
+. ./print_starting_updates.sh --source-only
+. ./prompt_update_or_reinstall.sh --source-only
+. ./update_aur_pkg.sh --source-only
+. ./set_update_or_reinstall.sh --source-only
+. ./sync_pkg_list.sh --source-only
 
 # cd into AUR repository directory
 cd "$aurpath"
