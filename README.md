@@ -6,7 +6,9 @@
 
 This is a ~~simple~~ script to update AUR packages. It assumes that all of your AUR packages are in one directory and have been cloned from the AUR using ```git clone```.
 
-While 
+I initially started this project as a simple script to loop through my AUR packages and run `git pull` and `makepkg -sirc` on them so I could simply update them. I found the idea of using an AUR helper, like `yay` appealing, but I also wanted to make sure I understood how to handle AUR packages correctly myself. I also wanted to learn a bit more about shell scripting, hence we have AUR-Update.
+
+This project has, in my opinion, grown beyond the point at which it should be a shell script, so I am (slowly) moving functionality over to a Python script at [AHYU](https://www.github.com/wbdana/ahyu). I may still update this script from time to time because I am still using it while I move over to AHYU.
 
 ## Installation
 
