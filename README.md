@@ -4,7 +4,9 @@
 
 ## About
 
-This is a simple script to update AUR packages. It assumes that all of your AUR packages are in one directory and have been cloned from the AUR using ```git clone```.
+This is a ~~simple~~ script to update AUR packages. It assumes that all of your AUR packages are in one directory and have been cloned from the AUR using ```git clone```.
+
+While 
 
 ## Installation
 
