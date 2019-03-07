@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-aurpath=/home/wbdana/aur-packages
 
 LIGHTRED='\033[1;31m'
 LIGHTGREEN='\033[1;32m'
